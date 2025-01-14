@@ -7,6 +7,8 @@ kanban /
 │   │   ├── Drawer.tsx
 │   │   ├── Footer.tsx
 │   │   ├── Header.tsx
+│   │   ├── Dropdown.tsx
+│   │   ├── ThemeToggler.tsx
 │   ├── layouts/                  # Layout components
 │   │   └── MainLayout.tsx        # Main layout wrapper
 │   ├── pages/                    # Page components
@@ -17,6 +19,7 @@ kanban /
 │   ├── store/                    # Redux configuration
 │   │   └── authSlice.ts          # Authentication State
 │   │   └── index.ts              # Redux default
+│   │   └── themeSlice.ts
 │   ├── styles/                   # Styles (Tailwind, CSS, etc.)
 │   │   └── index.css
 │   ├── App.tsx                   # Main App component

@@ -1,15 +1,16 @@
-// src/App.tsx
-import { HelmetProvider } from 'react-helmet-async';
-import AppRoutes from './routes/routes';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from './hooks';
 import { onAuthStateChanged } from 'firebase/auth';
 import { setUser } from './store/authSlice';
-import { auth } from './firebase';
+import { auth } from './firebase/firebase';
+import { saveUserTheme } from './firebase/themeStorage'; // Import the saveUserTheme function
+import { HelmetProvider } from 'react-helmet-async';
+import AppRoutes from './routes/routes';
 
 const App: React.FC = () => {
   const dispatch = useAppDispatch();
   const theme = useAppSelector((state) => state.theme.theme);
+
   useEffect(() => {
     const html = document.documentElement;
     if (theme === 'dark') {
@@ -30,12 +31,16 @@ const App: React.FC = () => {
             photoURL: user.photoURL,
           })
         );
+
+        // Save user theme when signed in
+        saveUserTheme(user.uid, theme);
       } else {
         dispatch(setUser(null));
       }
     });
+
     return () => unsubscribe();
-  }, [dispatch]);
+  }, [dispatch, theme]);
 
   return (
     <HelmetProvider>

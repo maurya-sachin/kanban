@@ -1,7 +1,8 @@
 // src/store/authSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { auth, provider } from '../firebase';
+import { auth, provider, db } from '../firebase/firebase';
 import { signInWithPopup, signOut } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore'; // Firestore methods
 
 interface User {
   uid: string;
@@ -25,13 +26,42 @@ const initialState: AuthState = {
 // Async thunk for signing in
 export const signIn = createAsyncThunk<User>('auth/signIn', async () => {
   const result = await signInWithPopup(auth, provider);
-  return result.user as User; // Cast to User
+  const user = result.user;
+
+  // Save user data to Firestore on sign in
+  await saveUserData(user.uid, user.displayName, user.email, user.photoURL);
+
+  return user as User; // Return user object
 });
 
 // Async thunk for signing out
 export const logOut = createAsyncThunk<void>('auth/logOut', async () => {
   await signOut(auth);
 });
+
+// Function to save user data to Firestore
+const saveUserData = async (
+  uid: string,
+  displayName: string | null,
+  email: string | null,
+  photoURL: string | null
+) => {
+  const userRef = doc(db, 'users', uid); // Reference to user document
+  const userData = {
+    displayName,
+    email,
+    photoURL,
+  };
+
+  try {
+    const docSnapshot = await getDoc(userRef);
+    if (!docSnapshot.exists()) {
+      await setDoc(userRef, userData); // Save user data if document does not exist
+    }
+  } catch (error) {
+    console.error('Error saving user data:', error);
+  }
+};
 
 const authSlice = createSlice({
   name: 'auth',
