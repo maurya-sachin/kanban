@@ -22,7 +22,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* <link rel="canonical" href="https://sachinxyz.com" /> */}
       </Helmet>
       <Header />
-      <Drawer />
+      {/* <Drawer /> */}
       <main>{children}</main>
       <Footer />
     </div>
