@@ -10,12 +10,18 @@ kanban /
 │   ├── layouts/                  # Layout components
 │   │   └── MainLayout.tsx        # Main layout wrapper
 │   ├── pages/                    # Page components
-│   │   └── Home.tsx              # Home page
+│   │   ├── Home.tsx              # Home page
+│   │   └── Login.tsx             # Login page
 │   ├── routes/                   # Routes configuration
 │   │   └── routes.tsx            # Routes setup (AppRoutes)
+│   ├── store/                    # Redux configuration
+│   │   └── authSlice.ts          # Authentication State
+│   │   └── index.ts              # Redux default
 │   ├── styles/                   # Styles (Tailwind, CSS, etc.)
 │   │   └── index.css
 │   ├── App.tsx                   # Main App component
+│   ├── firebase.ts               # Firebase
+│   ├── hooks.ts               # customReduxHooks
 │   ├── main.tsx                  # Vite entry point
 │   └── vite-env.d.ts             # Vite environment types
 ├── .gitignore                    # Git ignore file
