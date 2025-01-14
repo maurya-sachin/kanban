@@ -1,4 +1,3 @@
-// src/store/themeSlice.ts
 import { createSlice } from '@reduxjs/toolkit';
 
 interface ThemeState {

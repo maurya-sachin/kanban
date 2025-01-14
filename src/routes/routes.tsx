@@ -1,28 +1,38 @@
 // src/routes/routes.tsx
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-// import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import Home from '../pages/Home.tsx';
 import Login from '../pages/Login.tsx';
-// import { useAppSelector } from '../hooks.ts';
+import { useAppSelector } from '../hooks.ts';
+
+// ProtectedRoute Wrapper Component
+const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
+  const user = useAppSelector((state) => state.auth.user);
+
+  return user ? children : <Navigate to="/login" replace />;
+};
 
 const AppRoutes: React.FC = () => {
-  // const user = useAppSelector((state) => state.auth.user);
+  const user = useAppSelector((state) => state.auth.user);
+
   return (
     <Router>
       <Routes>
-        {/* Default route with MainLayout */}
+        {/* Home Page with ProtectedRoute */}
         <Route
           path="/"
           element={
-            <MainLayout>
-              <Home />
-            </MainLayout>
+            <ProtectedRoute>
+              <MainLayout>
+                <Home />
+              </MainLayout>
+            </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<Login />} />
-        {/* <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} /> */}
+
+        {/* Login Page */}
+        <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       </Routes>
     </Router>
   );

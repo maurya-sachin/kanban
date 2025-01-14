@@ -1,4 +1,3 @@
-// src/firebase/themeStorage.ts
 import { doc, setDoc, getDoc, updateDoc, collection } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -9,17 +8,14 @@ export const saveUserTheme = async (uid: string, theme: 'light' | 'dark') => {
   const docRef = doc(settingsRef, 'theme'); // Store theme as a document inside 'settings'
 
   try {
-    // Check if theme document exists
     const docSnapshot = await getDoc(docRef);
 
     if (docSnapshot.exists()) {
-      // If it exists, update the theme
       await updateDoc(docRef, { theme });
     } else {
-      // If it doesn't exist, create it with the theme
       await setDoc(docRef, { theme });
     }
-    console.log('User  theme saved successfully');
+    console.log('User theme saved successfully');
   } catch (error) {
     console.error('Error saving theme:', error);
   }
@@ -34,12 +30,11 @@ export const getUserTheme = async (uid: string) => {
   try {
     const docSnapshot = await getDoc(docRef);
     if (docSnapshot.exists()) {
-      return docSnapshot.data().theme; // Return the theme
-    } else {
-      return null; // No theme found
+      return docSnapshot.data().theme;
     }
+    return null;
   } catch (error) {
     console.error('Error retrieving theme:', error);
-    return null; // Return null on error
+    return null;
   }
 };
