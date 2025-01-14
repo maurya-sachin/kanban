@@ -2,13 +2,22 @@
 import { HelmetProvider } from 'react-helmet-async';
 import AppRoutes from './routes/routes';
 import { useEffect } from 'react';
-import { useAppDispatch } from './hooks';
+import { useAppDispatch, useAppSelector } from './hooks';
 import { onAuthStateChanged } from 'firebase/auth';
 import { setUser } from './store/authSlice';
 import { auth } from './firebase';
 
 const App: React.FC = () => {
   const dispatch = useAppDispatch();
+  const theme = useAppSelector((state) => state.theme.theme);
+  useEffect(() => {
+    const html = document.documentElement;
+    if (theme === 'dark') {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
