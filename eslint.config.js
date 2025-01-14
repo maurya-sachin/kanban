@@ -1,41 +1,40 @@
-import js from '@eslint/js';
-import typescript from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
-import prettier from 'eslint-plugin-prettier';
+import globals from 'globals';
+import pluginJs from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import pluginReact from 'eslint-plugin-react';
 
+/** @type {import('eslint').Linter.Config[]} */
 export default [
-  js.configs.recommended,
   {
-    files: ['**/*.{ts,tsx}'],
-    plugins: {
-      '@typescript-eslint': typescript,
-      react: react,
-      'react-hooks': reactHooks,
-      prettier: prettier,
-    },
+    files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
     languageOptions: {
-      parser: typescriptParser,
       parserOptions: {
-        ecmaVersion: 'latest',
+        ecmaVersion: 2020,
         sourceType: 'module',
         ecmaFeatures: {
           jsx: true,
         },
       },
     },
-    rules: {
-      'react/react-in-jsx-scope': 'off',
-      'prettier/prettier': 'error',
-      '@typescript-eslint/no-unused-vars': ['error'],
-      '@typescript-eslint/no-explicit-any': 'warn',
-      // Add any other rules you want here
+  },
+  {
+    languageOptions: {
+      globals: globals.browser,
     },
+  },
+  pluginJs.configs.recommended,
+  ...tseslint.configs.recommended,
+  pluginReact.configs.flat.recommended,
+  {
     settings: {
       react: {
-        version: 'detect',
+        version: 'detect', // Automatically detects the React version
+        pragma: 'React', // Needed for the JSX transform
+        jsxRuntime: 'automatic', // React 17+ JSX transform
       },
+    },
+    rules: {
+      'react/react-in-jsx-scope': 'off', // Turn off the rule that requires React to be in scope
     },
   },
 ];
