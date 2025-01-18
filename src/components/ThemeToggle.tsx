@@ -1,21 +1,14 @@
-import React from 'react';
-import { useAppDispatch, useAppSelector } from '../hooks';
-import { toggleTheme } from '../store/themeSlice';
-import { saveUserTheme } from '../firebase/themeStorage';
-import { FaSun, FaMoon } from 'react-icons/fa';
+// src/components/ThemeToggle.tsx
 import { motion } from 'motion/react';
-
+import { FaMoon, FaSun } from 'react-icons/fa';
+import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../hooks/useTheme';
 const ThemeToggle: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const theme = useAppSelector((state) => state.theme.theme);
-  const user = useAppSelector((state) => state.auth.user);
+  const { user } = useAuth();
+  const { theme, setTheme } = useTheme(user?.uid);
 
   const handleThemeToggle = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    dispatch(toggleTheme());
-    if (user) {
-      saveUserTheme(user.uid, newTheme);
-    }
+    setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
   return (
