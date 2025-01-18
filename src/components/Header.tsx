@@ -2,7 +2,7 @@ import React from 'react';
 import ThemeToggle from './ThemeToggle';
 import { BsFillKanbanFill, BsThreeDotsVertical } from 'react-icons/bs';
 import { useAppDispatch, useAppSelector } from '../hooks';
-import DropdownMenu from './Dropdown';
+import DropdownMenu from './Logout';
 import { logOut } from '../store/authSlice';
 
 const Header: React.FC = () => {

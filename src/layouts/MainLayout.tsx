@@ -1,7 +1,7 @@
 // src/layouts/MainLayout.tsx
 import React, { ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
-import Drawer from '../components/Drawer';
+// import Drawer from '../components/Drawer';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 

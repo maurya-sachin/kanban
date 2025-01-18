@@ -1,7 +1,7 @@
 // src/pages/Home.tsx
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import Filter from '../components/Filter';
+import TaskWrapper from '../components/TaskWrapper';
 
 const Home: React.FC = () => {
   return (
@@ -13,8 +13,7 @@ const Home: React.FC = () => {
           content="Welcome to Task Scheduler! Organize your tasks effectively."
         />
       </Helmet>
-      <Filter />
-      <h1>Welcome to Task Scheduler</h1>
+      <TaskWrapper />
     </div>
   );
 };
