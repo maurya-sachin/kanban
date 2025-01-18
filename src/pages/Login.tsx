@@ -1,33 +1,20 @@
 // src/components/Login.tsx
 import React from 'react';
-import { useAppDispatch, useAppSelector } from '../hooks';
-import { signIn, logOut } from '../store/authSlice';
+import { useAuth } from '../hooks/useAuth';
 
 const Login: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth.user);
-  const loading = useAppSelector((state) => state.auth.loading);
-  const error = useAppSelector((state) => state.auth.error);
-
-  const handleSignIn = async () => {
-    await dispatch(signIn());
-  };
-
-  const handleLogOut = async () => {
-    await dispatch(logOut());
-  };
+  const { user, signIn, isLoading, error, isSigningIn } = useAuth();
 
   return (
     <div>
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error}</p>}
+      {isLoading || isSigningIn ? <p>Loading...</p> : null}
+      {error && <p>Error: {error.message}</p>}
       {user ? (
         <div>
           <p>Welcome, {user.displayName}</p>
-          <button onClick={handleLogOut}>Log Out</button>
         </div>
       ) : (
-        <button onClick={handleSignIn}>Sign In with Google</button>
+        <button onClick={signIn}>Sign In with Google</button>
       )}
     </div>
   );

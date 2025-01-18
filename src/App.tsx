@@ -1,4 +1,3 @@
-// Updated App.tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
@@ -20,9 +19,9 @@ const AppContent: React.FC = () => {
   const { user } = useAuth();
   const { theme } = useTheme(user?.uid);
 
+  // This effect listens for theme changes and applies it to the document root
   useEffect(() => {
-    const html = document.documentElement;
-    html.classList.toggle('dark', theme === 'dark');
+    document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
   return (
@@ -31,4 +30,5 @@ const AppContent: React.FC = () => {
     </HelmetProvider>
   );
 };
+
 export default App;

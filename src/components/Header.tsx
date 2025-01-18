@@ -1,19 +1,13 @@
 import React from 'react';
 import ThemeToggle from './ThemeToggle';
 import { BsFillKanbanFill, BsThreeDotsVertical } from 'react-icons/bs';
-import { useAppDispatch, useAppSelector } from '../hooks';
+import { useAuth } from '../hooks/useAuth';
 import DropdownMenu from './Logout';
-import { logOut } from '../store/authSlice';
 
 const Header: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth.user);
+  const { user, signOut } = useAuth();
 
-  const handleLogOut = async () => {
-    await dispatch(logOut());
-  };
-
-  const options = [{ label: 'Log Out', onClick: handleLogOut }];
+  const options = [{ label: 'Log Out', onClick: signOut }];
 
   return (
     <div className="flex justify-between p-4 bg-gray-100 dark:bg-gray-800 transition-colors duration-300">

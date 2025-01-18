@@ -1,20 +1,18 @@
-// src/routes/routes.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import Home from '../pages/Home.tsx';
 import Login from '../pages/Login.tsx';
-import { useAppSelector } from '../hooks.ts';
+import { useAuth } from '../hooks/useAuth.ts';
 
-// ProtectedRoute Wrapper Component
 const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
-  const user = useAppSelector((state) => state.auth.user);
+  const { user } = useAuth(); // Destructure user from useAuth
 
   return user ? children : <Navigate to="/login" replace />;
 };
 
 const AppRoutes: React.FC = () => {
-  const user = useAppSelector((state) => state.auth.user);
+  const { user } = useAuth(); // Destructure user here as well
 
   return (
     <Router>

@@ -3,12 +3,12 @@ import { FaListUl, FaThLarge, FaPlus, FaChevronDown } from 'react-icons/fa';
 import { Button } from './ui/Button';
 import { Dropdown, DropdownItem } from './ui/Dropdown';
 import { SearchInput } from './ui/Search';
-import { useAppDispatch, useAppSelector } from '../hooks';
-import { setView } from '../store/viewSlice';
+import { useView } from '../hooks/useView';
+import { useAuth } from '../hooks/useAuth';
 
 const Filter: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const view = useAppSelector((state) => state.view.view);
+  const { user } = useAuth();
+  const { view, toggleView } = useView(user?.uid);
   const [selectedCategory, setSelectedCategory] = React.useState<string>('all');
   const [selectedDate, setSelectedDate] = React.useState<string>('all');
 
@@ -31,7 +31,7 @@ const Filter: React.FC = () => {
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex gap-1">
           <Button
             variant={view === 'list' ? 'secondary' : 'ghost'}
-            onClick={() => dispatch(setView('list'))} // Dispatch Redux action here
+            onClick={toggleView}
             className="flex items-center gap-2"
           >
             <FaListUl className="h-4 w-4" />
@@ -39,11 +39,11 @@ const Filter: React.FC = () => {
           </Button>
           <Button
             variant={view === 'grid' ? 'secondary' : 'ghost'}
-            onClick={() => dispatch(setView('grid'))} // Dispatch Redux action here
+            onClick={toggleView}
             className="flex items-center gap-2"
           >
             <FaThLarge className="h-4 w-4" />
-            <span className="hidden sm:inline">Grid</span>
+            <span className="hidden sm:inline">Board</span>
           </Button>
         </div>
       </div>

@@ -1,15 +1,16 @@
 import React from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { useAppDispatch, useAppSelector } from '../hooks';
-import { setView } from '../store/viewSlice';
+import { AnimatePresence, motion } from 'framer-motion';
+
 import { Task } from '../types/tasks';
 import ListView from './ListView/ListView';
 // import BoardView from './BoardView';
 import Filter from './Filter';
+import { useAuth } from '../hooks/useAuth';
+import { useView } from '../hooks/useView';
 
 const TaskWrapper: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const view = useAppSelector((state) => state.view.view); // Using custom selector hook for `view`
+  const { user } = useAuth();
+  const { view } = useView(user?.uid);
   const [tasks, setTasks] = React.useState<Task[]>([
     {
       id: '1',
@@ -32,12 +33,12 @@ const TaskWrapper: React.FC = () => {
       status: 'COMPLETED',
       category: 'WORK',
     },
-    // Add more initial tasks here...
+    // More mock tasks can go here
   ]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <Filter view={view} setView={(view) => dispatch(setView(view))} />
+      <Filter />
       <AnimatePresence mode="wait">
         <motion.div
           key={view}
@@ -49,7 +50,7 @@ const TaskWrapper: React.FC = () => {
           {view === 'list' ? (
             <ListView tasks={tasks} setTasks={setTasks} />
           ) : (
-            // <BoardView tasks={tasks} setTasks={setTasks} />
+            // Future BoardView rendering
             <div>Board View</div>
           )}
         </motion.div>

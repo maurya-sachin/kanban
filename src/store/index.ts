@@ -1,11 +1,8 @@
 // src/store/index.ts
 import { configureStore } from '@reduxjs/toolkit';
-import viewReducer from './viewSlice';
 
 const store = configureStore({
-  reducer: {
-    view: viewReducer,
-  },
+  reducer: {},
 });
 
 export type RootState = ReturnType<typeof store.getState>;
