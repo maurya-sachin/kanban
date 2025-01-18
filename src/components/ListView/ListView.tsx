@@ -1,4 +1,3 @@
-// src/components/ListView/ListView.tsx
 import React, { useState } from 'react';
 import { Task } from '../../types/tasks';
 import ListHeader from './ListHeader';
@@ -14,9 +13,18 @@ interface ListViewProps {
 
 const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
-  const [expandedSection, setExpandedSection] = useState<
-    'TODO' | 'IN-PROGRESS' | 'COMPLETED' | null
-  >('TODO');
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    TODO: true,
+    'IN-PROGRESS': false,
+    COMPLETED: false,
+  });
+
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   const todoTasks = tasks.filter((task) => task.status === 'TO-DO');
   const inProgressTasks = tasks.filter((task) => task.status === 'IN-PROGRESS');
@@ -30,9 +38,9 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
       <TaskAccordion
         title="Todo"
         count={todoTasks.length}
-        isExpanded={expandedSection === 'TODO'}
-        onToggle={() => setExpandedSection(expandedSection === 'TODO' ? null : 'TODO')}
-        accentColor="bg-pink-100"
+        isExpanded={expandedSections.TODO}
+        onToggle={() => toggleSection('TODO')}
+        accentColor="bg-pink-100 dark:bg-pink-900"
       >
         <AddTaskRow setTasks={setTasks} />
         {todoTasks.map((task) => (
@@ -54,11 +62,9 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
       <TaskAccordion
         title="In-Progress"
         count={inProgressTasks.length}
-        isExpanded={expandedSection === 'IN-PROGRESS'}
-        onToggle={() =>
-          setExpandedSection(expandedSection === 'IN-PROGRESS' ? null : 'IN-PROGRESS')
-        }
-        accentColor="bg-blue-100"
+        isExpanded={expandedSections['IN-PROGRESS']}
+        onToggle={() => toggleSection('IN-PROGRESS')}
+        accentColor="bg-blue-100 dark:bg-blue-900"
       >
         {inProgressTasks.map((task) => (
           <TaskRow
@@ -79,9 +85,9 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
       <TaskAccordion
         title="Completed"
         count={completedTasks.length}
-        isExpanded={expandedSection === 'COMPLETED'}
-        onToggle={() => setExpandedSection(expandedSection === 'COMPLETED' ? null : 'COMPLETED')}
-        accentColor="bg-green-100"
+        isExpanded={expandedSections.COMPLETED}
+        onToggle={() => toggleSection('COMPLETED')}
+        accentColor="bg-green-100 dark:bg-green-900"
       >
         {completedTasks.map((task) => (
           <TaskRow
@@ -105,17 +111,20 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
-            className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg px-6 py-3 flex items-center space-x-4"
+            className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-lg px-6 py-3 flex items-center space-x-4"
           >
             <span>{selectedTasks.length} tasks selected</span>
-            <select className="px-3 py-1 rounded border">
+            <select className="px-3 py-1 rounded border dark:bg-gray-700 dark:text-gray-300">
               <option value="">Change Status</option>
               <option value="TO-DO">To Do</option>
               <option value="IN-PROGRESS">In Progress</option>
               <option value="COMPLETED">Completed</option>
             </select>
             <button className="text-red-500">Delete</button>
-            <button className="text-gray-500" onClick={() => setSelectedTasks([])}>
+            <button
+              className="text-gray-500 dark:text-gray-300"
+              onClick={() => setSelectedTasks([])}
+            >
               Cancel
             </button>
           </motion.div>

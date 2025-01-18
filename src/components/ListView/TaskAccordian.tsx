@@ -11,7 +11,6 @@ interface TaskAccordionProps {
   children: React.ReactNode;
   accentColor: string;
 }
-
 const TaskAccordion: React.FC<TaskAccordionProps> = ({
   title,
   count,
@@ -22,12 +21,19 @@ const TaskAccordion: React.FC<TaskAccordionProps> = ({
 }) => {
   return (
     <div className={`border rounded-lg ${accentColor}`}>
-      <button onClick={onToggle} className="w-full px-4 py-3 flex justify-between items-center">
+      <button
+        onClick={onToggle}
+        className="w-full px-4 py-3 flex justify-between items-center rounded-lg  dark:bg-gray-800"
+      >
         <div className="flex items-center space-x-2">
-          <span className="font-medium">{title}</span>
-          <span className="text-sm text-gray-500">({count})</span>
+          <span className="font-medium text-gray-900 dark:text-gray-100">{title}</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">({count})</span>
         </div>
-        {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+        {isExpanded ? (
+          <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+        ) : (
+          <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+        )}
       </button>
 
       <AnimatePresence>
@@ -37,7 +43,7 @@ const TaskAccordion: React.FC<TaskAccordionProps> = ({
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden bg-white"
+            className=" bg-white dark:bg-gray-700"
           >
             {children}
           </motion.div>

@@ -2,7 +2,6 @@
 import React, { ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
 // import Drawer from '../components/Drawer';
-import Footer from '../components/Footer';
 import Header from '../components/Header';
 
 // Define the type for the children prop
@@ -24,7 +23,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <Header />
       {/* <Drawer /> */}
       <main>{children}</main>
-      <Footer />
     </div>
   );
 };
