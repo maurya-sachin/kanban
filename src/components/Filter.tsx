@@ -1,16 +1,14 @@
-// src/components/Filter.tsx
 import React from 'react';
 import { FaListUl, FaThLarge, FaPlus, FaChevronDown } from 'react-icons/fa';
 import { Button } from './ui/Button';
 import { Dropdown, DropdownItem } from './ui/Dropdown';
 import { SearchInput } from './ui/Search';
+import { useAppDispatch, useAppSelector } from '../hooks';
+import { setView } from '../store/viewSlice';
 
-interface FilterProps {
-  view: 'list' | 'board';
-  setView: (view: 'list' | 'board') => void;
-}
-
-const Filter: React.FC<FilterProps> = ({ view, setView }) => {
+const Filter: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const view = useAppSelector((state) => state.view.view);
   const [selectedCategory, setSelectedCategory] = React.useState<string>('all');
   const [selectedDate, setSelectedDate] = React.useState<string>('all');
 
@@ -33,19 +31,19 @@ const Filter: React.FC<FilterProps> = ({ view, setView }) => {
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex gap-1">
           <Button
             variant={view === 'list' ? 'secondary' : 'ghost'}
-            onClick={() => setView('list')}
+            onClick={() => dispatch(setView('list'))} // Dispatch Redux action here
             className="flex items-center gap-2"
           >
             <FaListUl className="h-4 w-4" />
             <span className="hidden sm:inline">List</span>
           </Button>
           <Button
-            variant={view === 'board' ? 'secondary' : 'ghost'}
-            onClick={() => setView('board')}
+            variant={view === 'grid' ? 'secondary' : 'ghost'}
+            onClick={() => dispatch(setView('grid'))} // Dispatch Redux action here
             className="flex items-center gap-2"
           >
             <FaThLarge className="h-4 w-4" />
-            <span className="hidden sm:inline">Board</span>
+            <span className="hidden sm:inline">Grid</span>
           </Button>
         </div>
       </div>

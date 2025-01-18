@@ -1,14 +1,16 @@
-// src/components/TaskWrapper.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useAppDispatch, useAppSelector } from '../hooks';
+import { setView } from '../store/viewSlice';
 import { Task } from '../types/tasks';
 import ListView from './ListView/ListView';
 // import BoardView from './BoardView';
 import Filter from './Filter';
 
 const TaskWrapper: React.FC = () => {
-  const [view, setView] = useState<'list' | 'board'>('list');
-  const [tasks, setTasks] = useState<Task[]>([
+  const dispatch = useAppDispatch();
+  const view = useAppSelector((state) => state.view.view); // Using custom selector hook for `view`
+  const [tasks, setTasks] = React.useState<Task[]>([
     {
       id: '1',
       title: 'Interview with Design Team',
@@ -35,7 +37,7 @@ const TaskWrapper: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <Filter view={view} setView={setView} />
+      <Filter view={view} setView={(view) => dispatch(setView(view))} />
       <AnimatePresence mode="wait">
         <motion.div
           key={view}
