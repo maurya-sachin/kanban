@@ -1,16 +1,37 @@
-// src/types/task.ts
+// src/types/tasks.ts
+
 export type TaskStatus = 'TO-DO' | 'IN-PROGRESS' | 'COMPLETED';
-export type TaskCategory = 'WORK' | 'PERSONAL';
 
 export interface Task {
   id: string;
   title: string;
-  dueDate: string;
+  description?: string;
   status: TaskStatus;
-  category: TaskCategory;
+  createdAt: number;
+  updatedAt: number;
+  dueDate?: number;
+  category: 'WORK' | 'PERSONAL';
 }
 
-export interface TaskGroup {
-  status: TaskStatus;
-  tasks: Task[];
+// Component Props Types
+export interface TaskRowProps {
+  task: Task;
+  selected: boolean;
+  onSelect: (id: string) => void;
+  onUpdateTask: (updates: Partial<Task>) => void;
+}
+
+export interface AddTaskRowProps {
+  onAddTask: (task: Task) => void;
+}
+
+// Hook Types
+export interface TaskMutationParams {
+  taskId: string;
+  updates: Partial<Task>;
+}
+
+export interface BulkUpdateParams {
+  taskIds: string[];
+  updates: Partial<Task>;
 }

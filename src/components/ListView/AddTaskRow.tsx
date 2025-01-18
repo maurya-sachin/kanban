@@ -8,10 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Dropdown, DropdownItem } from '../../components/ui/Dropdown';
 import '../../styles/datepicker.css';
 import { Input } from '../ui/Input';
-
-interface AddTaskRowProps {
-  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-}
+import { useTasks } from '../../hooks/useTask';
 
 const STATUS_OPTIONS = [
   { id: 'TO-DO', name: 'To Do' },
@@ -24,33 +21,57 @@ const CATEGORY_OPTIONS = [
   { id: 'PERSONAL', name: 'Personal' },
 ] as const;
 
-const AddTaskRow: React.FC<AddTaskRowProps> = ({ setTasks }) => {
+interface AddTaskRowProps {
+  uid: string; // Add user ID to interact with the correct task list
+}
+
+const AddTaskRow: React.FC<AddTaskRowProps> = ({ uid }) => {
   const [isAdding, setIsAdding] = useState(false);
-  const [newTask, setNewTask] = useState({
+  const [newTask, setNewTask] = useState<Task>({
+    id: '',
     title: '',
-    dueDate: '',
+    description: '',
     status: STATUS_OPTIONS[0].id,
     category: CATEGORY_OPTIONS[0].id,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    dueDate: undefined,
   });
 
-  const handleSubmit = () => {
+  // Access addTask from useTasks hook
+  const { addTask, isAddingTask } = useTasks(uid);
+
+  const handleSubmit = async () => {
     if (!newTask.title) return;
 
-    setTasks((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        ...newTask,
-      },
-    ]);
+    // Prepare the task object to be added, including createdAt and updatedAt
+    const taskToAdd: Task = {
+      id: Date.now().toString(),
+      title: newTask.title,
+      status: newTask.status,
+      category: newTask.category,
+      createdAt: Date.now(), // Add current timestamp for createdAt
+      updatedAt: Date.now(), // Add current timestamp for updatedAt
+      dueDate: newTask.dueDate ? new Date(newTask.dueDate).getTime() : undefined, // Convert date to timestamp if available
+    };
 
-    setNewTask({
-      title: '',
-      dueDate: '',
-      status: STATUS_OPTIONS[0].id,
-      category: CATEGORY_OPTIONS[0].id,
-    });
-    setIsAdding(false);
+    // Call addTask to add the task to the database and update the list
+    try {
+      await addTask(taskToAdd);
+      setNewTask({
+        id: '',
+        title: '',
+        dueDate: undefined,
+        status: STATUS_OPTIONS[0].id,
+        category: CATEGORY_OPTIONS[0].id,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+
+      setIsAdding(false);
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
   };
 
   if (!isAdding) {
@@ -88,7 +109,7 @@ const AddTaskRow: React.FC<AddTaskRowProps> = ({ setTasks }) => {
           onChange={(date) =>
             setNewTask((prev) => ({
               ...prev,
-              dueDate: date ? date.toISOString().split('T')[0] : '',
+              dueDate: date ? date.getTime() : undefined,
             }))
           }
           dateFormat="yyyy-MM-dd"
@@ -133,8 +154,8 @@ const AddTaskRow: React.FC<AddTaskRowProps> = ({ setTasks }) => {
         </Dropdown>
 
         <div className="flex space-x-2">
-          <Button onClick={handleSubmit} variant="default">
-            Add
+          <Button onClick={handleSubmit} variant="default" disabled={isAddingTask}>
+            {isAddingTask ? 'Adding...' : 'Add'}
           </Button>
           <Button onClick={() => setIsAdding(false)} variant="secondary">
             Cancel

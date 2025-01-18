@@ -12,7 +12,8 @@ interface TaskRowProps {
   task: Task;
   selected: boolean;
   onSelect: (id: string) => void;
-  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  onUpdateTask: (updatedTask: Task) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
 const STATUS_OPTIONS = [
@@ -26,18 +27,24 @@ const CATEGORY_OPTIONS = [
   { id: 'PERSONAL', name: 'Personal', icon: <FaTasks className="text-purple-500" /> },
 ] as const;
 
-const TaskRow: React.FC<TaskRowProps> = ({ task, selected, onSelect, setTasks }) => {
+const TaskRow: React.FC<TaskRowProps> = ({
+  task,
+  selected,
+  onSelect,
+  onUpdateTask,
+  onDeleteTask,
+}) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
 
   const handleSave = () => {
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? editedTask : t)));
+    onUpdateTask(editedTask);
     setIsEditing(false);
   };
 
   const handleDelete = () => {
-    setTasks((prev) => prev.filter((t) => t.id !== task.id));
+    onDeleteTask(task.id);
   };
 
   const getStatusColor = (status: Task['status']) => {
@@ -84,19 +91,21 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, selected, onSelect, setTasks })
       <div>
         {isEditing ? (
           <DatePicker
-            selected={new Date(editedTask.dueDate)}
+            selected={editedTask.dueDate ? new Date(editedTask.dueDate) : null}
             onChange={(date) =>
               setEditedTask((prev) => ({
                 ...prev,
-                dueDate: date ? date.toISOString().split('T')[0] : '',
+                dueDate: date ? date.getTime() : 0, // Convert to timestamp
               }))
             }
             dateFormat="yyyy-MM-dd"
             placeholderText="Select date"
-            className="px-3 py-1 border rounded focus:ring-2 focus:ring-purple-500 outline-none w-full  bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10"
+            className="px-3 py-1 border rounded focus:ring-2 focus:ring-purple-500 outline-none w-full bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10"
           />
         ) : (
-          <span>{format(new Date(task.dueDate), 'MMM dd, yyyy')}</span>
+          <span>
+            {task.dueDate ? format(new Date(task.dueDate), 'MMM dd, yyyy') : 'No Due Date'}
+          </span>
         )}
       </div>
 
@@ -134,7 +143,8 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, selected, onSelect, setTasks })
           <Dropdown
             trigger={
               <Button variant="outline" className="w-full text-left">
-                {CATEGORY_OPTIONS.find((option) => option.id === editedTask.category)?.name}
+                {CATEGORY_OPTIONS.find((option) => option.id === editedTask.category)?.name ||
+                  'No Category'}
               </Button>
             }
           >
@@ -151,7 +161,7 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, selected, onSelect, setTasks })
           </Dropdown>
         ) : (
           <span className="text-gray-600 dark:text-gray-400">
-            {CATEGORY_OPTIONS.find((option) => option.id === task.category)?.name}
+            {CATEGORY_OPTIONS.find((option) => option.id === task.category)?.name || 'No Category'}
           </span>
         )}
       </div>
@@ -160,7 +170,7 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, selected, onSelect, setTasks })
       <div className="relative">
         {isEditing ? (
           <div className="flex space-x-2">
-            <Button onClick={handleSave} variant="default">
+            <Button onClick={handleSave} variant="secondary">
               Save
             </Button>
             <Button onClick={() => setIsEditing(false)} variant="secondary">

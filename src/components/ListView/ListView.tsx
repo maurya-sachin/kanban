@@ -1,19 +1,30 @@
 import React, { useState } from 'react';
-import { Task } from '../../types/tasks';
 import ListHeader from './ListHeader';
 import TaskAccordion from './TaskAccordian';
 import AddTaskRow from './AddTaskRow';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import TaskRow from './TaskRow';
 import { Dropdown, DropdownItem } from '../../components/ui/Dropdown';
 import { Button } from '../../components/ui/Button';
+import { useTasks } from '../../hooks/useTask';
+import { TaskStatus } from '../../types/tasks';
 
 interface ListViewProps {
-  tasks: Task[];
-  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  uid: string;
 }
 
-const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
+const ListView: React.FC<ListViewProps> = ({ uid }) => {
+  const {
+    todoTasks,
+    inProgressTasks,
+    completedTasks,
+    updateTask,
+    deleteTask,
+    bulkUpdateTasks,
+    bulkDeleteTasks,
+    isLoading,
+  } = useTasks(uid);
+
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     TODO: true,
@@ -28,20 +39,19 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
     }));
   };
 
-  const todoTasks = tasks.filter((task) => task.status === 'TO-DO');
-  const inProgressTasks = tasks.filter((task) => task.status === 'IN-PROGRESS');
-  const completedTasks = tasks.filter((task) => task.status === 'COMPLETED');
-
-  const handleChangeStatus = (status: string) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => (selectedTasks.includes(task.id) ? { ...task, status } : task))
-    );
-  };
-
-  const handleDelete = () => {
-    setTasks((prevTasks) => prevTasks.filter((task) => !selectedTasks.includes(task.id)));
+  const handleChangeStatus = (status: TaskStatus) => {
+    bulkUpdateTasks({ taskIds: selectedTasks, updates: { status } });
     setSelectedTasks([]);
   };
+
+  const handleDelete = async () => {
+    bulkDeleteTasks(selectedTasks);
+    setSelectedTasks([]);
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -55,7 +65,7 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
         onToggle={() => toggleSection('TODO')}
         accentColor="bg-indigo-200 dark:bg-indigo-800"
       >
-        <AddTaskRow setTasks={setTasks} />
+        <AddTaskRow uid={uid} />
         {todoTasks.map((task) => (
           <TaskRow
             key={task.id}
@@ -66,7 +76,8 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
                 prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
               );
             }}
-            setTasks={setTasks}
+            onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
+            onDeleteTask={() => deleteTask(uid)}
           />
         ))}
       </TaskAccordion>
@@ -89,7 +100,8 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
                 prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
               );
             }}
-            setTasks={setTasks}
+            onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
+            onDeleteTask={() => deleteTask(uid)}
           />
         ))}
       </TaskAccordion>
@@ -112,7 +124,8 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
                 prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
               );
             }}
-            setTasks={setTasks}
+            onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
+            onDeleteTask={() => deleteTask(uid)}
           />
         ))}
       </TaskAccordion>
@@ -128,7 +141,6 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
           >
             <span>{selectedTasks.length} tasks selected</span>
 
-            {/* Dropdown for Change Status */}
             <Dropdown
               trigger={
                 <Button variant="outline" className="px-3 py-1 rounded text-left">
@@ -153,12 +165,10 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
               />
             </Dropdown>
 
-            {/* Delete Button */}
             <Button onClick={handleDelete} variant="ghost" className="text-red-500">
               Delete
             </Button>
 
-            {/* Cancel Button */}
             <Button
               onClick={() => setSelectedTasks([])}
               variant="ghost"
