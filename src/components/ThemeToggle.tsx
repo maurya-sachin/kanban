@@ -29,7 +29,7 @@ const ThemeToggle: React.FC = () => {
         initial={false}
         animate={{ rotate: theme === 'light' ? 180 : 0 }}
         transition={{ duration: 0.3 }}
-        className="text-yellow-500 dark:text-blue-300"
+        className="text-yellow-500 dark:text-purple-500 dark:hover:text-purple-600"
       >
         {theme === 'light' ? <FaSun size={20} /> : <FaMoon size={20} />}
       </motion.div>
