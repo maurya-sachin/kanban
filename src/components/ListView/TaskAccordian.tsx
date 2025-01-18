@@ -23,7 +23,7 @@ const TaskAccordion: React.FC<TaskAccordionProps> = ({
     <div className={`border rounded-lg ${accentColor}`}>
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex justify-between items-center rounded-lg  dark:bg-gray-800"
+        className="w-full px-4 py-3 flex justify-between items-center rounded-lg  "
       >
         <div className="flex items-center space-x-2">
           <span className="font-medium text-gray-900 dark:text-gray-100">{title}</span>

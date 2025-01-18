@@ -5,6 +5,8 @@ import TaskAccordion from './TaskAccordian';
 import AddTaskRow from './AddTaskRow';
 import { motion, AnimatePresence } from 'motion/react';
 import TaskRow from './TaskRow';
+import { Dropdown, DropdownItem } from '../../components/ui/Dropdown';
+import { Button } from '../../components/ui/Button';
 
 interface ListViewProps {
   tasks: Task[];
@@ -30,6 +32,17 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
   const inProgressTasks = tasks.filter((task) => task.status === 'IN-PROGRESS');
   const completedTasks = tasks.filter((task) => task.status === 'COMPLETED');
 
+  const handleChangeStatus = (status: string) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) => (selectedTasks.includes(task.id) ? { ...task, status } : task))
+    );
+  };
+
+  const handleDelete = () => {
+    setTasks((prevTasks) => prevTasks.filter((task) => !selectedTasks.includes(task.id)));
+    setSelectedTasks([]);
+  };
+
   return (
     <div className="space-y-4">
       <ListHeader />
@@ -40,7 +53,7 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
         count={todoTasks.length}
         isExpanded={expandedSections.TODO}
         onToggle={() => toggleSection('TODO')}
-        accentColor="bg-pink-100 dark:bg-pink-900"
+        accentColor="bg-indigo-200 dark:bg-indigo-800"
       >
         <AddTaskRow setTasks={setTasks} />
         {todoTasks.map((task) => (
@@ -64,7 +77,7 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
         count={inProgressTasks.length}
         isExpanded={expandedSections['IN-PROGRESS']}
         onToggle={() => toggleSection('IN-PROGRESS')}
-        accentColor="bg-blue-100 dark:bg-blue-900"
+        accentColor="bg-teal-200 dark:bg-teal-800"
       >
         {inProgressTasks.map((task) => (
           <TaskRow
@@ -87,7 +100,7 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
         count={completedTasks.length}
         isExpanded={expandedSections.COMPLETED}
         onToggle={() => toggleSection('COMPLETED')}
-        accentColor="bg-green-100 dark:bg-green-900"
+        accentColor="bg-lime-200 dark:bg-lime-800"
       >
         {completedTasks.map((task) => (
           <TaskRow
@@ -114,19 +127,45 @@ const ListView: React.FC<ListViewProps> = ({ tasks, setTasks }) => {
             className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-lg px-6 py-3 flex items-center space-x-4"
           >
             <span>{selectedTasks.length} tasks selected</span>
-            <select className="px-3 py-1 rounded border dark:bg-gray-700 dark:text-gray-300">
-              <option value="">Change Status</option>
-              <option value="TO-DO">To Do</option>
-              <option value="IN-PROGRESS">In Progress</option>
-              <option value="COMPLETED">Completed</option>
-            </select>
-            <button className="text-red-500">Delete</button>
-            <button
-              className="text-gray-500 dark:text-gray-300"
+
+            {/* Dropdown for Change Status */}
+            <Dropdown
+              trigger={
+                <Button variant="outline" className="px-3 py-1 rounded text-left">
+                  Change Status
+                </Button>
+              }
+            >
+              <DropdownItem
+                label="To Do"
+                value="TO-DO"
+                onClick={() => handleChangeStatus('TO-DO')}
+              />
+              <DropdownItem
+                label="In Progress"
+                value="IN-PROGRESS"
+                onClick={() => handleChangeStatus('IN-PROGRESS')}
+              />
+              <DropdownItem
+                label="Completed"
+                value="COMPLETED"
+                onClick={() => handleChangeStatus('COMPLETED')}
+              />
+            </Dropdown>
+
+            {/* Delete Button */}
+            <Button onClick={handleDelete} variant="ghost" className="text-red-500">
+              Delete
+            </Button>
+
+            {/* Cancel Button */}
+            <Button
               onClick={() => setSelectedTasks([])}
+              variant="ghost"
+              className="text-gray-500 dark:text-gray-300"
             >
               Cancel
-            </button>
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>

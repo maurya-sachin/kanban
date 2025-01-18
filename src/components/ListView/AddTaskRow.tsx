@@ -7,6 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Button } from '../../components/ui/Button';
 import { Dropdown, DropdownItem } from '../../components/ui/Dropdown';
 import '../../styles/datepicker.css';
+import { Input } from '../ui/Input';
 
 interface AddTaskRowProps {
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
@@ -74,7 +75,7 @@ const AddTaskRow: React.FC<AddTaskRowProps> = ({ setTasks }) => {
         animate={{ opacity: 1, y: 0 }}
         className="grid grid-cols-5 gap-4 px-4 py-2"
       >
-        <input
+        <Input
           type="text"
           placeholder="Task Title"
           value={newTask.title}
@@ -92,7 +93,7 @@ const AddTaskRow: React.FC<AddTaskRowProps> = ({ setTasks }) => {
           }
           dateFormat="yyyy-MM-dd"
           placeholderText="Select date"
-          className="px-3 py-1 border rounded focus:ring-2 focus:ring-purple-500 outline-none w-full"
+          className="px-3 py-1 border rounded focus:ring-2 focus:ring-purple-500 outline-none w-full  bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10"
         />
 
         <Dropdown
