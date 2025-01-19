@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogBackdrop } from '@headlessui/react';
 import { useDropzone } from 'react-dropzone';
 import { format } from 'date-fns';
-import { BsListUl } from 'react-icons/bs';
 import { IoClose } from 'react-icons/io5';
 import { Editor } from '@tinymce/tinymce-react'; // Import TinyMCE editor
 import type { Task, TaskStatus } from '../types/tasks';
 import { removeFile, uploadFile } from '../aws/aws-sdk';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import TaskStatusDropdown from './TaskStatusDropdown';
 interface TaskEditDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -31,10 +31,7 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
     status: task.status,
   });
 
-  const [isStatusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [filePreviews, setFilePreviews] = useState<(string | File)[]>([]);
-
-  const statusDropdownRef = useRef<HTMLDivElement>(null);
 
   const { getRootProps, getInputProps } = useDropzone({
     maxFiles: 5,
@@ -69,20 +66,6 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
       }
     },
   });
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
-        setStatusDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -120,11 +103,6 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
     };
     onUpdateTask(updatedTask);
     onClose();
-  };
-
-  const handleStatusClick = (status: TaskStatus) => {
-    setFormData((prev) => ({ ...prev, status }));
-    setStatusDropdownOpen(false);
   };
 
   const handleRemoveFile = async (fileUrl: string) => {
@@ -220,44 +198,12 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
                     </div>
 
                     {/* Custom Dropdown for Task Status */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Task Status*
-                      </label>
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() => setStatusDropdownOpen(!isStatusDropdownOpen)}
-                          className="w-full px-3 py-2 border rounded-lg flex justify-between items-center dark:bg-gray-700 dark:text-white"
-                        >
-                          {formData.status === 'TO-DO' && 'To Do'}
-                          {formData.status === 'IN-PROGRESS' && 'In Progress'}
-                          {formData.status === 'COMPLETED' && 'Completed'}
-                          <BsListUl />
-                        </button>
-                        {isStatusDropdownOpen && (
-                          <div
-                            ref={statusDropdownRef}
-                            className="absolute bg-white dark:bg-gray-800 border rounded-lg shadow-md w-full mt-2 z-10"
-                          >
-                            {['TO-DO', 'IN-PROGRESS', 'COMPLETED'].map((status) => (
-                              <button
-                                key={status}
-                                type="button"
-                                onClick={() => handleStatusClick(status as TaskStatus)}
-                                className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600"
-                              >
-                                {status === 'TO-DO'
-                                  ? 'To Do'
-                                  : status === 'IN-PROGRESS'
-                                    ? 'In Progress'
-                                    : 'Completed'}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    <TaskStatusDropdown
+                      status={formData.status}
+                      onStatusChange={(newStatus) =>
+                        setFormData((prev) => ({ ...prev, status: newStatus }))
+                      }
+                    />
                   </div>
                   {/* File Upload */}
                   <div
