@@ -4,13 +4,17 @@ import { useTheme } from './hooks/useTheme';
 import { HelmetProvider } from 'react-helmet-async';
 import AppRoutes from './routes/routes';
 import { useEffect } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <DndProvider backend={HTML5Backend}>
+        <AppContent />
+      </DndProvider>
     </QueryClientProvider>
   );
 };
