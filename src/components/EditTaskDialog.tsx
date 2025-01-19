@@ -31,7 +31,12 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
     status: task.status,
   });
 
-  const [filePreviews, setFilePreviews] = useState<(string | File)[]>([]);
+  // Initialize filePreviews with existing images from task
+  const [filePreviews, setFilePreviews] = useState<(string | File)[]>(task.imageUrls || []);
+
+  useEffect(() => {
+    setFilePreviews(task.imageUrls || []);
+  }, [task]);
 
   const { getRootProps, getInputProps } = useDropzone({
     maxFiles: 5,
@@ -60,6 +65,12 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
         console.log('Successfully uploaded files:', validUrls.length);
 
         setFilePreviews((prev) => [...prev, ...validUrls]);
+        const updatedTask: Task = {
+          ...task,
+          imageUrls: [...(task.imageUrls || []), ...validUrls],
+          updatedAt: Date.now(),
+        };
+        onUpdateTask(updatedTask);
       } catch (error) {
         console.error('Error in file upload process:', error);
         // Handle error - show error message to user
@@ -99,14 +110,28 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
       ...formData,
       dueDate: formData.dueDate.getTime(),
       updatedAt: Date.now(),
-      imageUrls: filePreviews,
+      imageUrls: task.imageUrls || [],
     };
+    const newImageUrls = filePreviews
+      .filter((preview): preview is string => typeof preview === 'string')
+      .filter((url) => !task.imageUrls?.includes(url));
+
+    if (newImageUrls.length > 0) {
+      updatedTask.imageUrls = [...(updatedTask.imageUrls || []), ...newImageUrls];
+    }
+
     onUpdateTask(updatedTask);
     onClose();
   };
 
   const handleRemoveFile = async (fileUrl: string) => {
     await removeFile(fileUrl, setFilePreviews);
+    const updatedTask: Task = {
+      ...task,
+      imageUrls: filePreviews.filter((url) => url !== fileUrl),
+      updatedAt: Date.now(),
+    };
+    onUpdateTask(updatedTask);
   };
   return (
     <DndProvider backend={HTML5Backend}>

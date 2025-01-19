@@ -146,7 +146,7 @@ export const addTask = async (uid: string, task: Task, files?: File[]): Promise<
     const taskRef = doc(getTasksCollection(db, uid), task.id);
     const taskData = {
       ...task,
-      imageUrls,
+      imageUrls: imageUrls,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };
@@ -217,17 +217,16 @@ export const updateTask = async (
       );
     }
 
-    // Update image URLs array
-    const updatedImageUrls = [
-      ...(existingTask.imageUrls || []).filter(
-        (url): url is string => typeof url === 'string' && !deletedImageUrls?.includes(url)
-      ),
+    // Combine existing and new image URLs
+    // Update this part
+    const currentImageUrls = [
+      ...(updates.imageUrls || existingTask.imageUrls || []),
       ...newImageUrls,
     ];
 
     const updatedData = {
       ...updates,
-      imageUrls: updatedImageUrls,
+      imageUrls: currentImageUrls,
       updatedAt: Timestamp.now(),
     };
 
