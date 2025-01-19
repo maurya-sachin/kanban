@@ -4,7 +4,7 @@ import ListView from './ListView/ListView';
 import Filter from './Filter';
 import { useAuth } from '../hooks/useAuth';
 import { useView } from '../hooks/useView';
-import CreateTaskDialog from './createTaskDialog';
+import CreateTaskDialog from './NewTaskDialog';
 import BoardView from './BoardView/BoardView';
 
 const TaskWrapper: React.FC = () => {
