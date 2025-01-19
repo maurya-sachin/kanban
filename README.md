@@ -1,50 +1,156 @@
-# React + TypeScript + Vite
+# Kanban Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
 
-Currently, two official plugins are available:
+A feature-rich Kanban application built with **React** and **TypeScript**, designed to streamline task management with options for Board View and List View. It integrates Firebase for backend services and supports custom styling via Tailwind CSS.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Task Management**: Create, edit, and manage tasks.
+- **Dynamic Views**: Switch between Board View and List View for flexibility.
+- **Filter and Search**: Intuitive task filtering and search functionality.
+- **Authentication**: Secure user authentication via Firebase.
+- **Theme Support**: Light and dark themes with user preferences stored.
+- **Responsive Design**: Optimized for both desktop and mobile devices.
+- **AWS SDK Integration**: Placeholder for advanced integrations (e.g., S3 storage).
 
-- Configure the top-level `parserOptions` property like this:
+---
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
+## Project Structure
+
+```plaintext
+kanban-main
+├── public                  # Static assets
+│   └── vite.svg
+├── src                     # Application source code
+│   ├── assets              # Images and icons
+│   ├── aws                 # AWS SDK utilities
+│   ├── components          # React components
+│   │   ├── BoardView       # Board view-specific components
+│   │   ├── ListView        # List view-specific components
+│   │   ├── ui              # Reusable UI elements (Button, Input, Dropdown)
+│   │   └── ...
+│   ├── firebase            # Firebase configuration and utilities
+│   ├── hooks               # Custom React hooks for state management
+│   ├── layouts             # Layout components
+│   ├── pages               # Page-level components (Home, Login)
+│   ├── routes              # Application routes
+│   ├── styles              # Tailwind and custom CSS
+│   ├── types               # TypeScript type definitions
+│   └── utility             # Helper functions
+├── .gitignore              # Git ignore file
+├── package.json            # Project dependencies
+├── postcss.config.js       # PostCSS configuration
+├── tailwind.config.js      # Tailwind CSS configuration
+├── tsconfig.json           # TypeScript configuration
+├── vite.config.ts          # Vite build configuration
+└── README.md               # Project documentation
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+---
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react';
+## Installation
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-});
-```
+### Prerequisites
+
+- **Node.js** (>= 16.x)
+- **Yarn** (preferred over npm for this project)
+
+### Steps
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/maurya-sachin/kanban.git
+   cd kanban
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   yarn install
+   ```
+
+3. Set up environment variables:
+
+   - Copy the provided `env.txt` file to `.env`.
+   - Populate the required Firebase and AWS keys.
+
+4. Start the development server:
+
+   ```bash
+   yarn dev
+   ```
+
+5. Open the application in your browser:
+   ```
+   http://localhost:5173
+   ```
+
+---
+
+## Scripts
+
+| Command        | Description                          |
+| -------------- | ------------------------------------ |
+| `yarn dev`     | Start the development server         |
+| `yarn build`   | Build the application for production |
+| `yarn lint`    | Lint the project code                |
+| `yarn preview` | Preview the production build         |
+
+---
+
+## Technologies Used
+
+- **Frontend**:
+
+  - React
+  - TypeScript
+  - Tailwind CSS
+
+- **Backend Services**:
+
+  - Firebase Authentication
+  - Firebase Firestore
+  - AWS SDK (for image upload)
+
+- **Tooling**:
+  - Vite (Build tool)
+  - PostCSS
+
+---
+
+## Contributing
+
+1. Fork the repository.
+2. Create a feature branch:
+   ```bash
+   git checkout -b feature-name
+   ```
+3. Commit your changes:
+   ```bash
+   git commit -m "Add feature description"
+   ```
+4. Push the branch:
+   ```bash
+   git push origin feature-name
+   ```
+5. Open a Pull Request.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Contact
+
+For any inquiries or issues, feel free to contact the project maintainer:
+
+- **Name**: Sachin Maurya
+- **GitHub**: [maurya-sachin](https://github.com/maurya-sachin)
+- **Email**: [sachinmaurya1710@gmail.com](mailto:sachinmaurya1710@gmail.com)
