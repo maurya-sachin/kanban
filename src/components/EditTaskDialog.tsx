@@ -7,7 +7,8 @@ import { IoClose } from 'react-icons/io5';
 import { Editor } from '@tinymce/tinymce-react'; // Import TinyMCE editor
 import type { Task, TaskStatus } from '../types/tasks';
 import { removeFile, uploadFile } from '../aws/aws-sdk';
-
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 interface TaskEditDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -93,12 +94,19 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
     };
   }, [filePreviews]);
 
+  useEffect(() => {
+    return () => {
+      filePreviews.forEach((file) => {
+        if (typeof file === 'string' && file.startsWith('blob:')) {
+          URL.revokeObjectURL(file);
+        }
+      });
+    };
+  }, [filePreviews]);
+
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
-    if (isNaN(date.getTime())) {
-      return 'Invalid date';
-    }
-    return format(date, 'MMM dd, yyyy');
+    return isNaN(date.getTime()) ? 'Invalid date' : format(date, 'MMM dd, yyyy HH:mm:ss');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -123,214 +131,221 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
     await removeFile(fileUrl, setFilePreviews);
   };
   return (
-    <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <DialogBackdrop className="fixed inset-0 bg-black/30 dark:bg-black/80" />
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg w-full max-w-3xl shadow-xl overflow-hidden">
-          <div className="flex justify-between items-center p-4 border-b dark:border-gray-600">
-            <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
-              Edit Task
-            </Dialog.Title>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
-              aria-label="Close dialog"
-            >
-              <IoClose size={24} />
-            </button>
-          </div>
-
-          <div className="flex">
-            <div className="flex-1 p-6 overflow-y-auto">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* TinyMCE Editor */}
-                <div className="space-y-2">
-                  <Editor
-                    apiKey={key}
-                    init={{
-                      height: 200,
-                      menubar: false,
-                      plugins: [
-                        'advlist',
-                        'autolink',
-                        'lists',
-                        'link',
-                        'image',
-                        'charmap',
-                        'preview',
-                        'anchor',
-                      ],
-                      toolbar:
-                        'undo redo | bold italic underline | formatselect | bullist numlist outdent indent | link image',
-                    }}
-                    value={formData.title}
-                    onEditorChange={(content) =>
-                      setFormData((prev) => ({ ...prev, title: content }))
-                    }
-                  />
-                </div>
-
-                {/* Category Selection */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Task Category*
-                  </label>
-                  <div className="flex gap-3">
-                    {['WORK', 'PERSONAL'].map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() =>
-                          setFormData((prev) => ({ ...prev, category: cat as 'WORK' | 'PERSONAL' }))
-                        }
-                        className={`px-4 py-2 rounded-full ${formData.category === cat ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-white'}`}
-                      >
-                        {cat.charAt(0) + cat.slice(1).toLowerCase()}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Due Date and Status Inputs */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Due on*
-                    </label>
-                    <input
-                      type="date"
-                      value={format(formData.dueDate, 'yyyy-MM-dd')}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, dueDate: new Date(e.target.value) }))
-                      }
-                      className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                      required
-                    />
-                  </div>
-
-                  {/* Custom Dropdown for Task Status */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Task Status*
-                    </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setStatusDropdownOpen(!isStatusDropdownOpen)}
-                        className="w-full px-3 py-2 border rounded-lg flex justify-between items-center dark:bg-gray-700 dark:text-white"
-                      >
-                        {formData.status === 'TO-DO' && 'To Do'}
-                        {formData.status === 'IN-PROGRESS' && 'In Progress'}
-                        {formData.status === 'COMPLETED' && 'Completed'}
-                        <BsListUl />
-                      </button>
-                      {isStatusDropdownOpen && (
-                        <div
-                          ref={statusDropdownRef}
-                          className="absolute bg-white dark:bg-gray-800 border rounded-lg shadow-md w-full mt-2 z-10"
-                        >
-                          {['TO-DO', 'IN-PROGRESS', 'COMPLETED'].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => handleStatusClick(status as TaskStatus)}
-                              className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600"
-                            >
-                              {status === 'TO-DO'
-                                ? 'To Do'
-                                : status === 'IN-PROGRESS'
-                                  ? 'In Progress'
-                                  : 'Completed'}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* File Upload */}
-                <div
-                  {...getRootProps()}
-                  className="border-2 border-dashed rounded-lg p-4 dark:border-gray-600"
-                >
-                  <input {...getInputProps()} />
-                  <p className="text-center text-gray-500 dark:text-gray-400">
-                    Drop files here or click to upload (max 5 files, 5MB each)
-                  </p>
-                </div>
-
-                {/* File Previews */}
-                {filePreviews.length > 0 && (
-                  <div className="mt-4 space-y-4">
-                    {filePreviews.map((file, index) => (
-                      <div key={index} className="relative flex items-center gap-4">
-                        {typeof file === 'string' && file.startsWith('blob:') ? (
-                          <img
-                            src={file}
-                            alt={`file-preview-${index}`}
-                            className="w-full h-auto object-cover rounded-md"
-                          />
-                        ) : (
-                          <div className="text-sm text-gray-500 dark:text-gray-300">
-                            {(file as File).name}
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleRemoveFile(
-                              typeof file === 'string' ? file : URL.createObjectURL(file)
-                            )
-                          }
-                          className="absolute top-0 right-0 bg-purple-500 rounded-md m-2 border-gray-100 border-2 hover:bg-purple-700 hover:outline-purple-700 hover:outline-2"
-                        >
-                          <IoClose size={26} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Submit and Cancel Buttons */}
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 dark:bg-purple-800 dark:hover:bg-purple-700"
-                  >
-                    Update
-                  </button>
-                </div>
-              </form>
+    <DndProvider backend={HTML5Backend}>
+      <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-50 overflow-y-auto ">
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <DialogBackdrop className="fixed inset-0 bg-black/30 dark:bg-black/80" />
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg w-full max-w-3xl shadow-xl overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b dark:border-gray-600">
+              <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
+                Edit Task
+              </Dialog.Title>
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
+                aria-label="Close dialog"
+              >
+                <IoClose size={24} />
+              </button>
             </div>
 
-            {/* Activity Sidebar */}
-            <div className="w-72 border-l p-4 bg-gray-50 dark:bg-gray-700">
-              <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Activity</h3>
-              <div className="space-y-4">
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  <p>Task created</p>
-                  <p className="text-gray-400 dark:text-gray-500">{formatDate(task.createdAt)}</p>
-                </div>
-                {task.updatedAt !== task.createdAt && (
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
-                    <p>Task updated</p>
-                    <p className="text-gray-400 dark:text-gray-500">{formatDate(task.updatedAt)}</p>
+            <div className="flex">
+              <div className="flex-1 p-6 overflow-y-auto content-div">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* TinyMCE Editor */}
+                  <div className="space-y-2">
+                    <Editor
+                      apiKey={key}
+                      init={{
+                        height: 200,
+                        menubar: false,
+                        plugins: [
+                          'advlist',
+                          'autolink',
+                          'lists',
+                          'link',
+                          'image',
+                          'charmap',
+                          'preview',
+                          'anchor',
+                        ],
+                        toolbar:
+                          'undo redo | bold italic underline | formatselect | bullist numlist outdent indent | link image',
+                        forced_root_block: '',
+                      }}
+                      value={formData.title}
+                      onEditorChange={(content) =>
+                        setFormData((prev) => ({ ...prev, title: content }))
+                      }
+                    />
                   </div>
-                )}
+                  {/* Category Selection */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Task Category*
+                    </label>
+                    <div className="flex gap-3">
+                      {['WORK', 'PERSONAL'].map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              category: cat as 'WORK' | 'PERSONAL',
+                            }))
+                          }
+                          className={`px-4 py-2 rounded-full ${formData.category === cat ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-white'}`}
+                        >
+                          {cat.charAt(0) + cat.slice(1).toLowerCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Due Date and Status Inputs */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Due on*
+                      </label>
+                      <input
+                        type="date"
+                        value={format(formData.dueDate, 'yyyy-MM-dd')}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, dueDate: new Date(e.target.value) }))
+                        }
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                        required
+                      />
+                    </div>
+
+                    {/* Custom Dropdown for Task Status */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Task Status*
+                      </label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setStatusDropdownOpen(!isStatusDropdownOpen)}
+                          className="w-full px-3 py-2 border rounded-lg flex justify-between items-center dark:bg-gray-700 dark:text-white"
+                        >
+                          {formData.status === 'TO-DO' && 'To Do'}
+                          {formData.status === 'IN-PROGRESS' && 'In Progress'}
+                          {formData.status === 'COMPLETED' && 'Completed'}
+                          <BsListUl />
+                        </button>
+                        {isStatusDropdownOpen && (
+                          <div
+                            ref={statusDropdownRef}
+                            className="absolute bg-white dark:bg-gray-800 border rounded-lg shadow-md w-full mt-2 z-10"
+                          >
+                            {['TO-DO', 'IN-PROGRESS', 'COMPLETED'].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => handleStatusClick(status as TaskStatus)}
+                                className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600"
+                              >
+                                {status === 'TO-DO'
+                                  ? 'To Do'
+                                  : status === 'IN-PROGRESS'
+                                    ? 'In Progress'
+                                    : 'Completed'}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {/* File Upload */}
+                  <div
+                    {...getRootProps()}
+                    className="border-2 border-dashed rounded-lg p-4 cursor-pointer dark:border-gray-600"
+                  >
+                    <input {...getInputProps()} />
+                    <p className="text-center text-gray-500 dark:text-gray-400">
+                      Drop files here or click to upload (max 5 files, 5MB each)
+                    </p>
+                  </div>
+                  {/* File Previews */}
+                  {filePreviews.length > 0 && (
+                    <div className="mt-4 space-y-4">
+                      {filePreviews.map((file, index) => {
+                        const fileUrl = typeof file === 'string' ? file : URL.createObjectURL(file);
+                        const isImage =
+                          fileUrl.startsWith('blob:') || /\.(jpg|jpeg|png|gif)$/i.test(fileUrl);
+
+                        return (
+                          <div key={index} className="relative flex items-center gap-4">
+                            {isImage ? (
+                              <img
+                                src={fileUrl}
+                                alt={`file-preview-${index}`}
+                                className="w-full h-auto object-cover rounded-md"
+                              />
+                            ) : (
+                              <div className="text-sm text-gray-500 dark:text-gray-300">
+                                {/* If not an image, display the file name */}
+                                {(file as File).name}
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFile(fileUrl)}
+                              className="absolute top-0 right-0 bg-purple-500 rounded-md m-2 border-gray-100 border-2 hover:bg-purple-700 hover:outline-purple-700 hover:outline-2"
+                            >
+                              <IoClose size={26} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Submit and Cancel Buttons */}
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 dark:bg-purple-800 dark:hover:bg-purple-700"
+                    >
+                      Update
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Activity Sidebar */}
+              <div className="w-72 border-l p-4 bg-gray-50 dark:bg-gray-700">
+                <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Activity</h3>
+                <div className="space-y-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    <p>Task created</p>
+                    <p className="text-gray-400 dark:text-gray-500">{formatDate(task.createdAt)}</p>
+                  </div>
+                  {task.updatedAt !== task.createdAt && (
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <p>Task updated</p>
+                      <p className="text-gray-400 dark:text-gray-500">
+                        {formatDate(task.updatedAt)}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </Dialog>
+      </Dialog>
+    </DndProvider>
   );
 };
 

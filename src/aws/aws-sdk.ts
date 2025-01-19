@@ -12,13 +12,13 @@ const AWS_CLIENT = new S3Client({
   },
 });
 
-// Function to convert File to ArrayBuffer
-async function fileToBuffer(file: File): Promise<ArrayBuffer> {
+// Function to convert File to Uint8Array
+async function fileToUint8Array(file: File): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
       if (reader.result instanceof ArrayBuffer) {
-        resolve(reader.result);
+        resolve(new Uint8Array(reader.result)); // Convert ArrayBuffer to Uint8Array
       } else {
         reject(new Error('Failed to convert file to buffer'));
       }
@@ -33,8 +33,8 @@ export const uploadFile = async (file: File): Promise<string | null> => {
   try {
     console.log('Starting file upload:', { fileName: file.name, fileType: file.type });
 
-    // Convert file to ArrayBuffer
-    const fileBuffer = await fileToBuffer(file);
+    // Convert file to Uint8Array
+    const fileBuffer = await fileToUint8Array(file);
 
     // Generate a unique file name to prevent overwriting
     const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2)}-${file.name}`;
@@ -42,11 +42,13 @@ export const uploadFile = async (file: File): Promise<string | null> => {
     const params = {
       Bucket: S3_BUCKET,
       Key: `public/${uniqueFileName}`,
-      Body: fileBuffer, // Use ArrayBuffer directly instead of Buffer
+      Body: fileBuffer, // Use Uint8Array instead of ArrayBuffer
       ContentType: file.type,
     };
 
-    console.log('Sending to S3:', { bucket: S3_BUCKET, key: params.Key });
+    // console.log('Sending to S3:', { bucket: S3_BUCKET, key: params.Key });
+
+    // Upload the file to S3
     await AWS_CLIENT.send(new PutObjectCommand(params));
 
     const fileUrl = `https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/public/${uniqueFileName}`;
@@ -78,6 +80,8 @@ export const removeFile = async (
     };
 
     console.log('Sending delete command:', { bucket: S3_BUCKET, key: params.Key });
+
+    // Remove the file from S3
     await AWS_CLIENT.send(new DeleteObjectCommand(params));
 
     setFilePreviews((prev) => prev.filter((url) => url !== fileUrl));

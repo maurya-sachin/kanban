@@ -16,7 +16,6 @@ import { db } from './firebase';
 import { Task } from '../types/tasks';
 import {
   DeleteObjectCommand,
-  ObjectCannedACL,
   PutObjectCommand,
   S3Client,
   S3ServiceException,
@@ -63,7 +62,6 @@ async function uploadImageToS3(file: File, userId: string): Promise<string> {
     Key: `public/${fileName}`,
     Body: file,
     ContentType: file.type,
-    ACL: ObjectCannedACL.public_read,
   };
 
   try {
