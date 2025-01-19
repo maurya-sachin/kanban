@@ -1,3 +1,4 @@
+// ListView.tsx
 import React, { useMemo, useState } from 'react';
 import ListHeader from './ListHeader';
 import TaskAccordion from './TaskAccordian';
@@ -108,11 +109,29 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
     COMPLETED: false,
   });
 
+  // Add sorting state
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
+
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
     }));
+  };
+
+  const handleSortChange = (key: string) => {
+    if (sortBy === key) {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortBy(null);
+        setSortDirection(null);
+      }
+    } else {
+      setSortBy(key);
+      setSortDirection('asc');
+    }
   };
 
   const handleChangeStatus = (status: TaskStatus) => {
@@ -125,36 +144,33 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
     setSelectedTasks([]);
   };
 
-  const filteredTasks = useMemo(() => {
+  // Combined filtering and sorting logic
+  const filteredAndSortedTasks = useMemo(() => {
     let tasks = [...todoTasks, ...inProgressTasks, ...completedTasks];
 
-    // Filter by category
+    // Apply existing filters
     if (filters.category !== 'all') {
       tasks = tasks.filter((task) => {
         const normalizedTaskCategory = task.category?.toLowerCase() || '';
         const normalizedFilterCategory = filters.category.toLowerCase();
-        return normalizedTaskCategory === normalizedFilterCategory; // Compare lowercased values
+        return normalizedTaskCategory === normalizedFilterCategory;
       });
     }
 
-    // Filter by due date
     if (filters.dueDate === 'today') {
       tasks = tasks.filter(
         (task) => new Date(task.dueDate || '').toDateString() === new Date().toDateString()
       );
     } else if (filters.dueDate === 'this-week') {
       const currentDate = new Date();
-      const dayOfWeek = currentDate.getDay(); // 0 (Sunday) to 6 (Saturday)
-
-      // Start of the week: subtracted the day of the week value and got the previous Sunday.
+      const dayOfWeek = currentDate.getDay();
       const weekStart = new Date(currentDate);
       weekStart.setDate(currentDate.getDate() - dayOfWeek);
-      weekStart.setHours(0, 0, 0, 0); // Reset to midnight
+      weekStart.setHours(0, 0, 0, 0);
 
-      // End of the week: Added the days left until Saturday
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
-      weekEnd.setHours(23, 59, 59, 999); // End of the day
+      weekEnd.setHours(23, 59, 59, 999);
 
       tasks = tasks.filter((task) => {
         const taskDueDate = task.dueDate ? new Date(task.dueDate) : null;
@@ -168,8 +184,40 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
       );
     }
 
+    // Apply sorting after filtering
+    if (sortBy && sortDirection) {
+      tasks.sort((a, b) => {
+        let compareA, compareB;
+
+        switch (sortBy) {
+          case 'taskName':
+            compareA = a.title.toLowerCase();
+            compareB = b.title.toLowerCase();
+            break;
+          case 'dueOn':
+            compareA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+            compareB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+            break;
+          case 'taskStatus':
+            compareA = a.status;
+            compareB = b.status;
+            break;
+          case 'taskCategory':
+            compareA = (a.category || '').toLowerCase();
+            compareB = (b.category || '').toLowerCase();
+            break;
+          default:
+            return 0;
+        }
+
+        if (compareA < compareB) return sortDirection === 'asc' ? -1 : 1;
+        if (compareA > compareB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
     return tasks;
-  }, [todoTasks, inProgressTasks, completedTasks, filters]);
+  }, [todoTasks, inProgressTasks, completedTasks, filters, sortBy, sortDirection]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -177,12 +225,11 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
 
   return (
     <div className="space-y-4">
-      <ListHeader />
+      <ListHeader sortBy={sortBy} sortDirection={sortDirection} onSortChange={handleSortChange} />
 
-      {/* TODO Section */}
       <TaskSection
         status="TO-DO"
-        tasks={filteredTasks.filter((task) => task.status === 'TO-DO')}
+        tasks={filteredAndSortedTasks.filter((task) => task.status === 'TO-DO')}
         isExpanded={expandedSections.TODO}
         onToggle={() => toggleSection('TODO')}
         accentColor="bg-indigo-200 dark:bg-indigo-800"
@@ -195,10 +242,9 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
         <AddTaskRow uid={uid} />
       </TaskSection>
 
-      {/* IN-PROGRESS Section */}
       <TaskSection
         status="IN-PROGRESS"
-        tasks={filteredTasks.filter((task) => task.status === 'IN-PROGRESS')}
+        tasks={filteredAndSortedTasks.filter((task) => task.status === 'IN-PROGRESS')}
         isExpanded={expandedSections['IN-PROGRESS']}
         onToggle={() => toggleSection('IN-PROGRESS')}
         accentColor="bg-teal-200 dark:bg-teal-800"
@@ -209,10 +255,9 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
         bulkUpdateTasks={bulkUpdateTasks}
       />
 
-      {/* COMPLETED Section */}
       <TaskSection
         status="COMPLETED"
-        tasks={filteredTasks.filter((task) => task.status === 'COMPLETED')}
+        tasks={filteredAndSortedTasks.filter((task) => task.status === 'COMPLETED')}
         isExpanded={expandedSections.COMPLETED}
         onToggle={() => toggleSection('COMPLETED')}
         accentColor="bg-lime-200 dark:bg-lime-800"
@@ -223,7 +268,6 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
         bulkUpdateTasks={bulkUpdateTasks}
       />
 
-      {/* Multi-select Action Bar */}
       <AnimatePresence>
         {selectedTasks.length > 0 && (
           <motion.div

@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+// ListHeader.tsx
+import React from 'react';
 import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 
-const ListHeader: React.FC = () => {
-  const [sortBy, setSortBy] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
+interface ListHeaderProps {
+  sortBy: string | null;
+  sortDirection: 'asc' | 'desc' | null;
+  onSortChange: (key: string) => void;
+}
 
+const ListHeader: React.FC<ListHeaderProps> = ({ sortBy, sortDirection, onSortChange }) => {
   const toggleSort = (key: string) => {
-    if (sortBy === key) {
-      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortBy(key);
-      setSortDirection('asc');
-    }
+    onSortChange(key);
   };
 
   const getSortIcon = (key: string) => {

@@ -1,7 +1,7 @@
 // src/components/Login.tsx
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 const Login: React.FC = () => {
   const { user, signIn, isLoading, error, isSigningIn } = useAuth();
@@ -18,7 +18,6 @@ const Login: React.FC = () => {
     },
   };
 
-  // Floating Abstract Shapes Animation
   const floatingShapes = {
     animate: {
       y: ['0%', '5%', '0%'], // Moves up and down
@@ -27,7 +26,7 @@ const Login: React.FC = () => {
         repeat: Infinity,
         duration: 10,
         ease: 'easeInOut',
-        repeatType: 'reverse', // Reverse the movement
+        repeatType: 'reverse' as const,
       },
     },
   };
@@ -39,9 +38,9 @@ const Login: React.FC = () => {
       {...backgroundAnimation}
     >
       <div className="bg-gray-900 p-8 rounded-xl shadow-xl w-full sm:w-96 space-y-6 z-10 relative">
-        {/* Abstract Floating Shapes */}
+        {/* Abstract Floating Shapes with pointer-events-none */}
         <motion.div
-          className="absolute w-32 h-32 bg-indigo-300 rounded-full opacity-30"
+          className="absolute w-32 h-32 bg-indigo-300 rounded-full opacity-30 pointer-events-none"
           {...floatingShapes}
           style={{
             top: '10%',
@@ -49,7 +48,7 @@ const Login: React.FC = () => {
           }}
         />
         <motion.div
-          className="absolute w-40 h-40 bg-teal-400 rounded-full opacity-25"
+          className="absolute w-40 h-40 bg-teal-400 rounded-full opacity-25 pointer-events-none"
           {...floatingShapes}
           style={{
             top: '50%',
@@ -57,7 +56,7 @@ const Login: React.FC = () => {
           }}
         />
         <motion.div
-          className="absolute w-48 h-48 bg-pink-200 rounded-full opacity-15"
+          className="absolute w-48 h-48 bg-pink-200 rounded-full opacity-15 pointer-events-none"
           {...floatingShapes}
           style={{
             top: '70%',
