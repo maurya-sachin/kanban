@@ -6,7 +6,7 @@ import { BsListUl } from 'react-icons/bs';
 import { IoClose } from 'react-icons/io5';
 import { Editor } from '@tinymce/tinymce-react'; // Import TinyMCE editor
 import type { Task, TaskStatus } from '../types/tasks';
-import supabase from '../supabase/supabaseClient';
+import { removeFile, uploadFile } from '../aws/aws-sdk';
 
 interface TaskEditDialogProps {
   isOpen: boolean;
@@ -39,30 +39,33 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
     maxFiles: 5,
     maxSize: 5242880, // 5MB
     onDrop: async (files) => {
-      const newFilePreviews = await Promise.all(
-        files.map(async (file) => {
-          // Upload each file to Supabase
-          const { error } = await supabase.storage
-            .from('kanban-doc')
-            .upload(`public/${file.name}`, file, {
-              cacheControl: '3600',
-              upsert: true,
-            });
+      try {
+        // Show loading state or progress indicator if needed
+        console.log('Processing files:', files.length);
 
-          if (error) {
-            console.error('Supabase upload error:', error.message);
+        const uploadPromises = files.map(async (file) => {
+          console.log('Uploading file:', file.name);
+          try {
+            const url = await uploadFile(file);
+            console.log('Upload result:', { fileName: file.name, url });
+            return url;
+          } catch (error) {
+            console.error('Error uploading file:', file.name, error);
             return null;
           }
+        });
 
-          const publicUrl = supabase.storage.from('kanban-doc').getPublicUrl(`public/${file.name}`)
-            .data.publicUrl;
+        const uploadedFileUrls = await Promise.all(uploadPromises);
 
-          return publicUrl;
-        })
-      );
+        // Filter out null results and update the state
+        const validUrls = uploadedFileUrls.filter((url): url is string => url !== null);
+        console.log('Successfully uploaded files:', validUrls.length);
 
-      // Filter out null results and update state with file previews
-      setFilePreviews((prev) => [...prev, ...newFilePreviews.filter((url) => url !== null)]);
+        setFilePreviews((prev) => [...prev, ...validUrls]);
+      } catch (error) {
+        console.error('Error in file upload process:', error);
+        // Handle error - show error message to user
+      }
     },
   });
 
@@ -117,15 +120,8 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
   };
 
   const handleRemoveFile = async (fileUrl: string) => {
-    const filePath = fileUrl.split('/public/')[1];
-    const { error } = await supabase.storage.from('kanban-doc').remove([`public/${filePath}`]);
-    if (error) {
-      console.error('Error deleting file from Supabase:', error.message);
-      return;
-    }
-    setFilePreviews((prev) => prev.filter((url) => url !== fileUrl));
+    await removeFile(fileUrl, setFilePreviews);
   };
-
   return (
     <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
@@ -282,8 +278,12 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
                         )}
                         <button
                           type="button"
-                          onClick={() => handleRemoveFile(file)}
-                          className="absolute top-0 right-0 bg-purple-500  rounded-md m-2 border-gray-100 border-2 hover:bg-purple-700 hover:outline-purple-700 hover:outline-2 "
+                          onClick={() =>
+                            handleRemoveFile(
+                              typeof file === 'string' ? file : URL.createObjectURL(file)
+                            )
+                          }
+                          className="absolute top-0 right-0 bg-purple-500 rounded-md m-2 border-gray-100 border-2 hover:bg-purple-700 hover:outline-purple-700 hover:outline-2"
                         >
                           <IoClose size={26} />
                         </button>
