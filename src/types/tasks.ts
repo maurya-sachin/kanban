@@ -11,6 +11,7 @@ export interface Task {
   updatedAt: number;
   dueDate?: number;
   category: 'WORK' | 'PERSONAL';
+  imageUrls?: (string | File)[];
 }
 
 // Component Props Types

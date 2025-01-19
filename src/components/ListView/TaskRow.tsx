@@ -7,6 +7,7 @@ import { Dropdown, DropdownItem } from '../ui/Dropdown';
 import { Button } from '../ui/Button';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Input } from '../ui/Input';
+import EditTaskDialog from '../EditTaskDialog';
 
 interface TaskRowProps {
   task: Task;
@@ -34,9 +35,11 @@ const TaskRow: React.FC<TaskRowProps> = ({
   onUpdateTask,
   onDeleteTask,
 }) => {
-  const [showMenu, setShowMenu] = useState(false);
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleSave = () => {
     onUpdateTask(editedTask);
@@ -62,9 +65,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
 
   return (
     <div
-      className={`grid grid-cols-5 gap-4 px-4 py-3 border-b dark:border-gray-700 ${
-        selected ? 'bg-purple-50 dark:bg-purple-900' : 'bg-white dark:bg-gray-800'
-      } hover:bg-gray-50 dark:hover:bg-gray-700`}
+      className={`grid grid-cols-5 gap-4 px-4 py-3 border-b dark:border-gray-700 ${selected ? 'bg-purple-50 dark:bg-purple-900' : 'bg-white dark:bg-gray-800'} hover:bg-gray-50 dark:hover:bg-gray-700`}
     >
       {/* Checkbox and Title */}
       <div className="flex items-center space-x-3">
@@ -110,7 +111,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
       </div>
 
       {/* Status Dropdown */}
-      <div>
+      <div className="relative">
         {isEditing ? (
           <Dropdown
             trigger={
@@ -125,14 +126,44 @@ const TaskRow: React.FC<TaskRowProps> = ({
                 label={option.name}
                 value={option.id}
                 selected={option.id === editedTask.status}
-                onClick={() => setEditedTask((prev) => ({ ...prev, status: option.id }))}
+                onClick={() => {
+                  console.log('Selected Status:', option.id); // Log for debugging
+                  const updatedTask = { ...editedTask, status: option.id };
+                  setEditedTask(updatedTask); // Update local state
+                  onUpdateTask(updatedTask); // Notify parent component about the update
+                  setShowStatusMenu(false);
+                }}
                 icon={option.icon}
               />
             ))}
           </Dropdown>
         ) : (
-          <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(task.status)}`}>
+          <span
+            className={`px-2 py-1 rounded-full text-sm ${getStatusColor(task.status)}`}
+            onClick={() => setShowStatusMenu((prev) => !prev)} // Toggle showMenu when clicked
+          >
             {STATUS_OPTIONS.find((option) => option.id === task.status)?.name}
+
+            {/* Dropdown Menu */}
+            {showStatusMenu && (
+              <div className="absolute z-10 mt-2 bg-white dark:bg-gray-700 shadow-lg rounded-lg w-48">
+                {STATUS_OPTIONS.map((option) => (
+                  <DropdownItem
+                    key={option.id}
+                    label={option.name}
+                    value={option.id}
+                    selected={option.id === task.status}
+                    onClick={() => {
+                      console.log('Selected Status:', option.id); // Log for debugging
+                      const updatedTask = { ...task, status: option.id };
+                      onUpdateTask(updatedTask); // Notify parent component about the update
+                      setShowStatusMenu(false); // Close dropdown after selection
+                    }}
+                    icon={option.icon}
+                  />
+                ))}
+              </div>
+            )}
           </span>
         )}
       </div>
@@ -154,7 +185,12 @@ const TaskRow: React.FC<TaskRowProps> = ({
                 label={option.name}
                 value={option.id}
                 selected={option.id === editedTask.category}
-                onClick={() => setEditedTask((prev) => ({ ...prev, category: option.id }))}
+                onClick={() => {
+                  console.log('Selected Category:', option.id); // Log for debugging
+                  const updatedTask = { ...editedTask, category: option.id };
+                  setEditedTask(updatedTask); // Update local state
+                  onUpdateTask(updatedTask); // Notify parent component about the update
+                }}
                 icon={option.icon}
               />
             ))}
@@ -181,7 +217,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
           <Dropdown
             trigger={
               <Button
-                onClick={() => setShowMenu(!showMenu)}
+                onClick={() => setShowActionsMenu(!showActionsMenu)}
                 variant="ghost"
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
@@ -189,7 +225,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
               </Button>
             }
           >
-            <DropdownItem value="Edit" label="Edit" onClick={() => setIsEditing(true)} />
+            <DropdownItem value="Edit" label="Edit" onClick={() => setIsEditDialogOpen(true)} />
             <DropdownItem
               value="Delete"
               label="Delete"
@@ -199,6 +235,12 @@ const TaskRow: React.FC<TaskRowProps> = ({
           </Dropdown>
         )}
       </div>
+      <EditTaskDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        task={task}
+        onUpdateTask={onUpdateTask}
+      />
     </div>
   );
 };

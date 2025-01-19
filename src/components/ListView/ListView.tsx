@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import ListHeader from './ListHeader';
 import TaskAccordion from './TaskAccordian';
 import AddTaskRow from './AddTaskRow';
@@ -11,9 +11,10 @@ import { TaskStatus } from '../../types/tasks';
 
 interface ListViewProps {
   uid: string;
+  filters: { category: string; dueDate: string; searchQuery: string };
 }
 
-const ListView: React.FC<ListViewProps> = ({ uid }) => {
+const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
   const {
     todoTasks,
     inProgressTasks,
@@ -49,6 +50,55 @@ const ListView: React.FC<ListViewProps> = ({ uid }) => {
     setSelectedTasks([]);
   };
 
+  const filteredTasks = useMemo(() => {
+    let tasks = [...todoTasks, ...inProgressTasks, ...completedTasks];
+
+    const normalizedFilterCategory = filters.category.toLowerCase();
+    // Filter by category
+    if (filters.category !== 'all') {
+      tasks = tasks.filter((task) => {
+        const normalizedTaskCategory = task.category?.toLowerCase() || '';
+        console.log(
+          `Filtering task category: ${task.category}, normalized category: ${normalizedTaskCategory}, filter: ${normalizedFilterCategory}`
+        );
+        return normalizedTaskCategory === normalizedFilterCategory; // Compare lowercased values
+      });
+    }
+
+    // Filter by due date
+    if (filters.dueDate === 'today') {
+      tasks = tasks.filter(
+        (task) => new Date(task.dueDate || '').toDateString() === new Date().toDateString()
+      );
+    } else if (filters.dueDate === 'this-week') {
+      const currentDate = new Date();
+      const dayOfWeek = currentDate.getDay(); // 0 (Sunday) to 6 (Saturday)
+
+      // Start of the week: subtracted the day of the week value and got the previous Sunday.
+      const weekStart = new Date(currentDate);
+      weekStart.setDate(currentDate.getDate() - dayOfWeek);
+      weekStart.setHours(0, 0, 0, 0); // Reset to midnight
+
+      // End of the week: Added the days left until Saturday
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999); // End of the day
+
+      tasks = tasks.filter((task) => {
+        const taskDueDate = task.dueDate ? new Date(task.dueDate) : null;
+        return taskDueDate && taskDueDate >= weekStart && taskDueDate <= weekEnd;
+      });
+    }
+
+    if (filters.searchQuery) {
+      tasks = tasks.filter((task) =>
+        task.title.toLowerCase().includes(filters.searchQuery.toLowerCase())
+      );
+    }
+
+    return tasks;
+  }, [todoTasks, inProgressTasks, completedTasks, filters]);
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -60,74 +110,81 @@ const ListView: React.FC<ListViewProps> = ({ uid }) => {
       {/* TODO Section */}
       <TaskAccordion
         title="Todo"
-        count={todoTasks.length}
+        // count={todoTasks.length}
+        count={filteredTasks.filter((task) => task.status === 'TO-DO').length}
         isExpanded={expandedSections.TODO}
         onToggle={() => toggleSection('TODO')}
         accentColor="bg-indigo-200 dark:bg-indigo-800"
       >
         <AddTaskRow uid={uid} />
-        {todoTasks.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            selected={selectedTasks.includes(task.id)}
-            onSelect={(id) => {
-              setSelectedTasks((prev) =>
-                prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
-              );
-            }}
-            onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
-            onDeleteTask={() => deleteTask(uid)}
-          />
-        ))}
+        {filteredTasks
+          .filter((task) => task.status === 'TO-DO')
+          .map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              selected={selectedTasks.includes(task.id)}
+              onSelect={(id) => {
+                setSelectedTasks((prev) =>
+                  prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
+                );
+              }}
+              onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
+              onDeleteTask={() => deleteTask(uid)}
+            />
+          ))}
       </TaskAccordion>
 
       {/* IN-PROGRESS Section */}
       <TaskAccordion
         title="In-Progress"
-        count={inProgressTasks.length}
+        count={filteredTasks.filter((task) => task.status === 'IN-PROGRESS').length}
         isExpanded={expandedSections['IN-PROGRESS']}
         onToggle={() => toggleSection('IN-PROGRESS')}
         accentColor="bg-teal-200 dark:bg-teal-800"
       >
-        {inProgressTasks.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            selected={selectedTasks.includes(task.id)}
-            onSelect={(id) => {
-              setSelectedTasks((prev) =>
-                prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
-              );
-            }}
-            onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
-            onDeleteTask={() => deleteTask(uid)}
-          />
-        ))}
+        {filteredTasks
+          .filter((task) => task.status === 'IN-PROGRESS')
+          .map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              selected={selectedTasks.includes(task.id)}
+              onSelect={(id) => {
+                setSelectedTasks((prev) =>
+                  prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
+                );
+              }}
+              onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
+              onDeleteTask={() => deleteTask(uid)}
+            />
+          ))}
       </TaskAccordion>
 
       {/* COMPLETED Section */}
       <TaskAccordion
         title="Completed"
-        count={completedTasks.length}
+        count={filteredTasks.filter((task) => task.status === 'COMPLETED').length}
         isExpanded={expandedSections.COMPLETED}
         onToggle={() => toggleSection('COMPLETED')}
         accentColor="bg-lime-200 dark:bg-lime-800"
       >
-        {completedTasks.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            selected={selectedTasks.includes(task.id)}
-            onSelect={(id) => {
-              setSelectedTasks((prev) =>
-                prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
-              );
-            }}
-            onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
-            onDeleteTask={() => deleteTask(uid)}
-          />
-        ))}
+        {filteredTasks
+          .filter((task) => task.status === 'COMPLETED')
+          .map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              selected={selectedTasks.includes(task.id)}
+              onSelect={(id) => {
+                setSelectedTasks((prev) =>
+                  prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
+                );
+              }}
+              onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
+              onDeleteTask={() => deleteTask(uid)}
+            />
+          ))}
       </TaskAccordion>
 
       {/* Multi-select Action Bar */}

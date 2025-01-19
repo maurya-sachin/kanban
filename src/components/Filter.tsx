@@ -6,11 +6,15 @@ import { SearchInput } from './ui/Search';
 import { useView } from '../hooks/useView';
 import { useAuth } from '../hooks/useAuth';
 
-const Filter: React.FC = () => {
+interface FilterProps {
+  filters: { category: string; dueDate: string; searchQuery?: string };
+  setFilters: React.Dispatch<
+    React.SetStateAction<{ category: string; dueDate: string; searchQuery: string }>
+  >;
+}
+const Filter: React.FC<FilterProps> = ({ filters, setFilters }) => {
   const { user } = useAuth();
   const { view, toggleView } = useView(user?.uid);
-  const [selectedCategory, setSelectedCategory] = React.useState<string>('all');
-  const [selectedDate, setSelectedDate] = React.useState<string>('all');
 
   const categories = [
     { label: 'All Categories', value: 'all' },
@@ -21,7 +25,6 @@ const Filter: React.FC = () => {
   const dueDates = [
     { label: 'All Dates', value: 'all' },
     { label: 'Today', value: 'today' },
-    { label: 'Tomorrow', value: 'tomorrow' },
     { label: 'This Week', value: 'this-week' },
   ];
 
@@ -62,8 +65,8 @@ const Filter: React.FC = () => {
               key={category.value}
               label={category.label}
               value={category.value}
-              selected={selectedCategory === category.value}
-              onClick={() => setSelectedCategory(category.value)}
+              selected={filters.category === category.value}
+              onClick={() => setFilters((prev) => ({ ...prev, category: category.value }))}
             />
           ))}
         </Dropdown>
@@ -81,13 +84,17 @@ const Filter: React.FC = () => {
               key={date.value}
               label={date.label}
               value={date.value}
-              selected={selectedDate === date.value}
-              onClick={() => setSelectedDate(date.value)}
+              selected={filters.dueDate === date.value}
+              onClick={() => setFilters((prev) => ({ ...prev, dueDate: date.value }))}
             />
           ))}
         </Dropdown>
 
-        <SearchInput placeholder="Search tasks..." className="min-w-[200px]" />
+        <SearchInput
+          placeholder="Search tasks..."
+          className="min-w-[200px]"
+          onChange={(e) => setFilters((prev) => ({ ...prev, searchQuery: e.target.value }))}
+        />
 
         <Button className="flex items-center gap-2">
           <FaPlus className="h-4 w-4" />
