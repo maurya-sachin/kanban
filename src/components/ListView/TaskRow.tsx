@@ -7,9 +7,9 @@ import { Dropdown, DropdownItem } from '../ui/Dropdown';
 import { Button } from '../ui/Button';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Input } from '../ui/Input';
-import EditTaskDialog from '../EditTaskDialog';
 import parse from 'html-react-parser';
 import { useDrag } from 'react-dnd';
+import TaskEditDialog from '../EditTaskDialog';
 
 interface TaskRowProps {
   task: Task;
@@ -248,7 +248,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
           </Dropdown>
         )}
       </div>
-      <EditTaskDialog
+      <TaskEditDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
         task={task}

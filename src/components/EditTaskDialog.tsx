@@ -19,6 +19,9 @@ interface TaskEditDialogProps {
 const key = import.meta.env.VITE_TINTMCE_API_KEY;
 
 const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, onUpdateTask }) => {
+  if (!task) {
+    return null; // Don't render the dialog if task is null or undefined
+  }
   const [formData, setFormData] = useState<{
     title: string;
     category: 'WORK' | 'PERSONAL';
@@ -130,13 +133,21 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
 
   const handleRemoveFile = async (fileUrl: string) => {
     await removeFile(fileUrl, setFilePreviews);
+
+    // Filter out any non-string values from filePreviews before updating imageUrls
+    const updatedImageUrls = filePreviews
+      .filter((url) => typeof url === 'string') // Only keep strings
+      .filter((url) => url !== fileUrl); // Remove the fileUrl
+
     const updatedTask: Task = {
       ...task,
-      imageUrls: filePreviews.filter((url) => url !== fileUrl),
+      imageUrls: updatedImageUrls, // Ensure imageUrls only contains strings
       updatedAt: Date.now(),
     };
+
     onUpdateTask(updatedTask);
   };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-50 overflow-y-auto ">

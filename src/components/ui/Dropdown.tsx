@@ -17,7 +17,6 @@ export interface DropdownItemProps {
 
 export const DropdownItem: React.FC<DropdownItemProps> = ({
   label,
-  value,
   selected,
   onClick,
   icon,

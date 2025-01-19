@@ -5,6 +5,7 @@ import Filter from './Filter';
 import { useAuth } from '../hooks/useAuth';
 import { useView } from '../hooks/useView';
 import CreateTaskDialog from './createTaskDialog';
+import BoardView from './BoardView/BoardView';
 
 const TaskWrapper: React.FC = () => {
   const { user } = useAuth();
@@ -33,7 +34,7 @@ const TaskWrapper: React.FC = () => {
           {view === 'list' ? (
             <ListView filters={filters} uid={user?.uid || ''} />
           ) : (
-            <div>Board View</div>
+            <BoardView filters={filters} uid={user?.uid || ''} />
           )}
         </motion.div>
       </AnimatePresence>
