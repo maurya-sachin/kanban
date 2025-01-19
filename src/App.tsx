@@ -11,11 +11,11 @@ const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={HTML5Backend}>
+      <QueryClientProvider client={queryClient}>
         <AppContent />
-      </DndProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </DndProvider>
   );
 };
 

@@ -9,6 +9,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Input } from '../ui/Input';
 import EditTaskDialog from '../EditTaskDialog';
 import parse from 'html-react-parser';
+import { useDrag } from 'react-dnd';
 
 interface TaskRowProps {
   task: Task;
@@ -64,9 +65,20 @@ const TaskRow: React.FC<TaskRowProps> = ({
     }
   };
 
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: 'TASK',
+    item: { id: task.id, status: task.status },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
   return (
     <div
-      className={`grid grid-cols-5 gap-4 px-4 py-3 border-b dark:border-gray-700 ${selected ? 'bg-purple-50 dark:bg-purple-900' : 'bg-white dark:bg-gray-800'} hover:bg-gray-50 dark:hover:bg-gray-700`}
+      ref={drag}
+      className={`grid grid-cols-5 gap-4 px-4 py-3 border-b dark:border-gray-700 
+        ${selected ? 'bg-purple-50 dark:bg-purple-900' : 'bg-white dark:bg-gray-800'} 
+        ${isDragging ? 'opacity-50' : 'opacity-100'}
+        hover:bg-gray-50 dark:hover:bg-gray-700 cursor-move`}
     >
       {/* Checkbox and Title */}
       <div className="flex items-center space-x-3">

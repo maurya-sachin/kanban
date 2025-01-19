@@ -7,7 +7,82 @@ import TaskRow from './TaskRow';
 import { Dropdown, DropdownItem } from '../../components/ui/Dropdown';
 import { Button } from '../../components/ui/Button';
 import { useTasks } from '../../hooks/useTask';
-import { TaskStatus } from '../../types/tasks';
+import { useDrop } from 'react-dnd';
+import { Task, TaskStatus } from '../../types/tasks';
+
+interface TaskSectionProps {
+  status: TaskStatus;
+  tasks: Task[];
+  isExpanded: boolean;
+  onToggle: () => void;
+  accentColor: string;
+  selectedTasks: string[];
+  setSelectedTasks: React.Dispatch<React.SetStateAction<string[]>>;
+  updateTask: (params: { taskId: string; updates: Partial<Task> }) => void;
+  deleteTask: (taskId: string) => void;
+  bulkUpdateTasks: (params: { taskIds: string[]; updates: Partial<Task> }) => void;
+  children?: React.ReactNode;
+}
+
+const TaskSection: React.FC<TaskSectionProps> = ({
+  status,
+  tasks,
+  isExpanded,
+  onToggle,
+  accentColor,
+  selectedTasks,
+  setSelectedTasks,
+  updateTask,
+  deleteTask,
+  bulkUpdateTasks,
+  children,
+}) => {
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: 'TASK',
+    drop: (item: { id: string; status: TaskStatus }) => {
+      if (item.status !== status) {
+        bulkUpdateTasks({
+          taskIds: [item.id],
+          updates: { status },
+        });
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  }));
+
+  return (
+    <div
+      ref={drop}
+      className={`${isOver ? 'bg-purple-50 dark:bg-purple-900' : ''} transition-colors duration-200`}
+    >
+      <TaskAccordion
+        title={status === 'TO-DO' ? 'Todo' : status === 'IN-PROGRESS' ? 'In Progress' : 'Completed'}
+        count={tasks.length}
+        isExpanded={isExpanded}
+        onToggle={onToggle}
+        accentColor={accentColor}
+      >
+        {children}
+        {tasks.map((task) => (
+          <TaskRow
+            key={task.id}
+            task={task}
+            selected={selectedTasks.includes(task.id)}
+            onSelect={(id) => {
+              setSelectedTasks((prev) =>
+                prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
+              );
+            }}
+            onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
+            onDeleteTask={() => deleteTask(task.id)}
+          />
+        ))}
+      </TaskAccordion>
+    </div>
+  );
+};
 
 interface ListViewProps {
   uid: string;
@@ -105,84 +180,48 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
       <ListHeader />
 
       {/* TODO Section */}
-      <TaskAccordion
-        title="Todo"
-        // count={todoTasks.length}
-        count={filteredTasks.filter((task) => task.status === 'TO-DO').length}
+      <TaskSection
+        status="TO-DO"
+        tasks={filteredTasks.filter((task) => task.status === 'TO-DO')}
         isExpanded={expandedSections.TODO}
         onToggle={() => toggleSection('TODO')}
         accentColor="bg-indigo-200 dark:bg-indigo-800"
+        selectedTasks={selectedTasks}
+        setSelectedTasks={setSelectedTasks}
+        updateTask={updateTask}
+        deleteTask={deleteTask}
+        bulkUpdateTasks={bulkUpdateTasks}
       >
         <AddTaskRow uid={uid} />
-        {filteredTasks
-          .filter((task) => task.status === 'TO-DO')
-          .map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              selected={selectedTasks.includes(task.id)}
-              onSelect={(id) => {
-                setSelectedTasks((prev) =>
-                  prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
-                );
-              }}
-              onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
-              onDeleteTask={() => deleteTask(task.id)}
-            />
-          ))}
-      </TaskAccordion>
+      </TaskSection>
 
       {/* IN-PROGRESS Section */}
-      <TaskAccordion
-        title="In-Progress"
-        count={filteredTasks.filter((task) => task.status === 'IN-PROGRESS').length}
+      <TaskSection
+        status="IN-PROGRESS"
+        tasks={filteredTasks.filter((task) => task.status === 'IN-PROGRESS')}
         isExpanded={expandedSections['IN-PROGRESS']}
         onToggle={() => toggleSection('IN-PROGRESS')}
         accentColor="bg-teal-200 dark:bg-teal-800"
-      >
-        {filteredTasks
-          .filter((task) => task.status === 'IN-PROGRESS')
-          .map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              selected={selectedTasks.includes(task.id)}
-              onSelect={(id) => {
-                setSelectedTasks((prev) =>
-                  prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
-                );
-              }}
-              onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
-              onDeleteTask={() => deleteTask(task.id)}
-            />
-          ))}
-      </TaskAccordion>
+        selectedTasks={selectedTasks}
+        setSelectedTasks={setSelectedTasks}
+        updateTask={updateTask}
+        deleteTask={deleteTask}
+        bulkUpdateTasks={bulkUpdateTasks}
+      />
 
       {/* COMPLETED Section */}
-      <TaskAccordion
-        title="Completed"
-        count={filteredTasks.filter((task) => task.status === 'COMPLETED').length}
+      <TaskSection
+        status="COMPLETED"
+        tasks={filteredTasks.filter((task) => task.status === 'COMPLETED')}
         isExpanded={expandedSections.COMPLETED}
         onToggle={() => toggleSection('COMPLETED')}
         accentColor="bg-lime-200 dark:bg-lime-800"
-      >
-        {filteredTasks
-          .filter((task) => task.status === 'COMPLETED')
-          .map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              selected={selectedTasks.includes(task.id)}
-              onSelect={(id) => {
-                setSelectedTasks((prev) =>
-                  prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
-                );
-              }}
-              onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
-              onDeleteTask={() => deleteTask(task.id)}
-            />
-          ))}
-      </TaskAccordion>
+        selectedTasks={selectedTasks}
+        setSelectedTasks={setSelectedTasks}
+        updateTask={updateTask}
+        deleteTask={deleteTask}
+        bulkUpdateTasks={bulkUpdateTasks}
+      />
 
       {/* Multi-select Action Bar */}
       <AnimatePresence>
