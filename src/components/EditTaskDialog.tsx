@@ -103,6 +103,10 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
     return isNaN(date.getTime()) ? 'Invalid date' : format(date, 'MMM dd, yyyy HH:mm:ss');
   };
 
+  const handleCancel = () => {
+    setFilePreviews([]); // Clear file previews when canceled
+    onClose(); // Close the dialog
+  };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const updatedTask: Task = {
@@ -279,7 +283,7 @@ const TaskEditDialog: React.FC<TaskEditDialogProps> = ({ isOpen, onClose, task, 
                   <div className="flex justify-end gap-3">
                     <button
                       type="button"
-                      onClick={onClose}
+                      onClick={handleCancel}
                       className="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
                       Cancel

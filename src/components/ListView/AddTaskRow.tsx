@@ -36,6 +36,7 @@ const AddTaskRow: React.FC<AddTaskRowProps> = ({ uid }) => {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     dueDate: undefined,
+    imageUrls: [],
   });
 
   // Access addTask from useTasks hook
@@ -52,7 +53,8 @@ const AddTaskRow: React.FC<AddTaskRowProps> = ({ uid }) => {
       category: newTask.category,
       createdAt: Date.now(), // Add current timestamp for createdAt
       updatedAt: Date.now(), // Add current timestamp for updatedAt
-      dueDate: newTask.dueDate ? new Date(newTask.dueDate).getTime() : undefined, // Convert date to timestamp if available
+      dueDate: newTask.dueDate ? new Date(newTask.dueDate).getTime() : undefined,
+      imageUrls: [],
     };
 
     // Call addTask to add the task to the database and update the list
@@ -66,6 +68,7 @@ const AddTaskRow: React.FC<AddTaskRowProps> = ({ uid }) => {
         category: CATEGORY_OPTIONS[0].id,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        imageUrls: [],
       });
 
       setIsAdding(false);

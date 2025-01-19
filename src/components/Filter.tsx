@@ -11,11 +11,11 @@ interface FilterProps {
   setFilters: React.Dispatch<
     React.SetStateAction<{ category: string; dueDate: string; searchQuery: string }>
   >;
+  setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
-const Filter: React.FC<FilterProps> = ({ filters, setFilters }) => {
+const Filter: React.FC<FilterProps> = ({ filters, setFilters, setDialogOpen }) => {
   const { user } = useAuth();
   const { view, toggleView } = useView(user?.uid);
-
   const categories = [
     { label: 'All Categories', value: 'all' },
     { label: 'Work', value: 'work' },
@@ -96,7 +96,7 @@ const Filter: React.FC<FilterProps> = ({ filters, setFilters }) => {
           onChange={(e) => setFilters((prev) => ({ ...prev, searchQuery: e.target.value }))}
         />
 
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2" onClick={() => setDialogOpen(true)}>
           <FaPlus className="h-4 w-4" />
           Add Task
         </Button>

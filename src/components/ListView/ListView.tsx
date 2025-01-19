@@ -127,7 +127,7 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
                 );
               }}
               onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
-              onDeleteTask={() => deleteTask(uid)}
+              onDeleteTask={() => deleteTask(task.id)}
             />
           ))}
       </TaskAccordion>
@@ -153,7 +153,7 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
                 );
               }}
               onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
-              onDeleteTask={() => deleteTask(uid)}
+              onDeleteTask={() => deleteTask(task.id)}
             />
           ))}
       </TaskAccordion>
@@ -179,7 +179,7 @@ const ListView: React.FC<ListViewProps> = ({ uid, filters }) => {
                 );
               }}
               onUpdateTask={(updates) => updateTask({ taskId: task.id, updates })}
-              onDeleteTask={() => deleteTask(uid)}
+              onDeleteTask={() => deleteTask(task.id)}
             />
           ))}
       </TaskAccordion>

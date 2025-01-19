@@ -122,6 +122,7 @@ const getTasksCollection = (db: Firestore, uid: string) => {
 export const addTask = async (uid: string, task: Task, files?: File[]): Promise<void> => {
   console.log('Adding new task:', { uid, taskId: task.id, filesCount: files?.length });
 
+  // Check if task.id is properly defined
   if (!uid || !task.id) {
     console.error('Invalid input parameters:', { uid, taskId: task.id });
     throw new Error('Invalid user ID or task ID');

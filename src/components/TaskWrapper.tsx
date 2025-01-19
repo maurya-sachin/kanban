@@ -4,10 +4,12 @@ import ListView from './ListView/ListView';
 import Filter from './Filter';
 import { useAuth } from '../hooks/useAuth';
 import { useView } from '../hooks/useView';
+import CreateTaskDialog from './createTaskDialog';
 
 const TaskWrapper: React.FC = () => {
   const { user } = useAuth();
   const { view } = useView(user?.uid);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [filters, setFilters] = useState<{
     category: string;
     dueDate: string;
@@ -19,7 +21,7 @@ const TaskWrapper: React.FC = () => {
   });
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <Filter filters={filters} setFilters={setFilters} />
+      <Filter filters={filters} setFilters={setFilters} setDialogOpen={setDialogOpen} />
       <AnimatePresence mode="wait">
         <motion.div
           key={view}
@@ -35,6 +37,12 @@ const TaskWrapper: React.FC = () => {
           )}
         </motion.div>
       </AnimatePresence>
+
+      <CreateTaskDialog
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        uid={user?.uid || ''}
+      />
     </div>
   );
 };
