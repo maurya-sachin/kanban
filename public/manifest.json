@@ -23,14 +23,9 @@
       "type": "image/png"
     },
     {
-      "src": "/favicon256.png",
-      "sizes": "256x256",
-      "type": "image/png"
-    },
-    {
-      "src": "/favicon512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/fav-icon.webp",
+      "sizes": "1024x1024",
+      "type": "image/webp"
     }
   ]
 }
