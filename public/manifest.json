@@ -6,6 +6,8 @@
   "display": "standalone",
   "background_color": "#1f2937",
   "theme_color": "#1f2937",
+  "id": "https://kanban-sachin.vercel.app/",
+  "display_override": ["window-controls-overlay"],
   "icons": [
     {
       "src": "/favicon32.png",
@@ -23,9 +25,28 @@
       "type": "image/png"
     },
     {
+      "src": "/favicon144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
       "src": "/fav-icon.webp",
       "sizes": "1024x1024",
       "type": "image/webp"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-list.png",
+      "sizes": "1585x738",
+      "type": "image/png",
+      "platform": "wide"
+    },
+    {
+      "src": "/screenshot-board.png",
+      "sizes": "1585x738",
+      "type": "image/png",
+      "platform": "narrow"
     }
   ]
 }
